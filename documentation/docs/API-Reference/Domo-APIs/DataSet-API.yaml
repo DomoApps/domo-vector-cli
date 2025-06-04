@@ -1,0 +1,1528 @@
+openapi: 3.0.0
+x-stoplight:
+  id: 3b1e3a7d5f420
+info:
+  title: DataSet API
+  description: |
+    ## The DataSet Object
+
+    ---
+
+    The DataSet API allows you to create, replace, append to, export, and manage DataSets, as well as manage data permissions for DataSets within Domo. Most of its calls return a DataSet object.
+
+    <!-- theme: info -->
+
+    > #### Best Practice
+    >
+    > The DataSet API should be used to create and update small DataSets that occasionally need their data updated. For creating and updating massive, constantly changing, or rapidly growing DataSets, the Stream API is recommended.
+
+    <!-- theme: info -->
+
+    > #### Permissions
+    >
+    > To update or write to a DataSet via API, you must have the Manage DataSet grant enabled.
+
+    ### Attributes
+
+    | Property Name | Type | Description |
+    | --- | --- | --- |
+    | id | String | ID of the DataSet |
+    | name | String | Name of the DataSet |
+    | description | String | Description of DataSet |
+    | owner.id | String | ID of the owner |
+    | owner.name | String | Name of the owner |
+    | columns | Number | The number of columns currently in the DataSet |
+    | createdAt | String | An ISO-8601 representation of the creation date of the DataSet |
+    | updatedAt | String | AN ISO-8601 representation of the time the DataSet was last updated |
+    | dataCurrentAt | String | An ISO-8601 representation of the time the DataSet was current |
+    | schema | Object | The current schema associated with this DataSet |
+    | schema.columns | Array | Array of columns in the DataSet |
+    | schema.columns\[\].name | String | Column name in the DataSet schema |
+    | schema.columns\[\].type | String | Column type in the DataSet schema. Valid types are STRING, DECIMAL, LONG, DOUBLE, DATE, DATETIME. |
+    | pdpEnabled | Boolean | Indicates if PDP \[Personalized Data Permission\] policy filtering on data is active on this DataSet |
+    | policies | Array | List of policies attached to DataSet |
+    | policies\[\].filters\[\].column | String | Name of the column to filter on |
+    | policies\[\].filters\[\].not | Boolean | Determines if NOT is applied to the filter operation |
+    | policies\[\].filters\[\].operator | String | Matching operator (EQUALS) |
+    | policies\[\].filters\[\].values\[\] | String | Values to filter on |
+    | policies\[\].groups | Array | List of group IDs the policy applies to |
+    | policies\[\].id | Number | ID of the Policy |
+    | policies\[\].name | String | Name of the Policy |
+    | policies\[\].type | String | Type of policy (user or system) |
+    | policies\[\].users | Array | List of user IDs the policy applies to |
+    | rows | Number | The number of rows currently in the DataSet |
+  version: 1.0.0
+servers:
+  - url: 'https://api.domo.com'
+    description: Domo API
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+  schemas:
+    DataSourceListOrderBy:
+      type: string
+      enum:
+        - name
+        - nameDescending
+        - lastTouched
+        - lastTouchedAscending
+        - lastUpdated
+        - lastUpdatedAscending
+        - createdAt
+        - createdAtAscending
+        - cardCount
+        - cardCountAscending
+        - cardViewCount
+        - cardViewCountAscending
+        - errorState
+        - errorStateDescending
+        - dataSourceId
+security:
+  - bearerAuth: []
+paths:
+  '/v1/datasets/{dataset_id}':
+    get:
+      summary: Retrieve DataSet Details
+      description: Retrieves the details of an existing DataSet.
+      parameters:
+        - name: dataset_id
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: 'Returns a DataSet object if a valid `dataset_id` was provided. When requesting, if the `dataset_id` is related to a DataSet that has been deleted, a subset of the DataSet''s information will be returned, including a `deleted` property, which will be `true`.'
+          content:
+            application/json:
+              examples:
+                Example 1:
+                  value:
+                    id: 08a061e2-12a2-4646-b4bc-20beddb403e3
+                    name: Timeline Feed
+                    description: Important
+                    rows: 1
+                    columns: 6
+                    schema:
+                      columns:
+                        - type: STRING
+                          name: Name
+                    createdAt: '2015-12-10T07:06:14Z'
+                    updatedAt: '2016-02-29T20:56:20.567Z'
+                    pdpEnabled: false
+                    policies:
+                      - id: 8
+                        type: user
+                        name: Only Show Attendees
+                        filters:
+                          - column: Attending
+                            values:
+                              - 'TRUE'
+                            operator: EQUALS
+                            not: false
+                        users:
+                          - 27
+                        groups: []
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  description:
+                    type: string
+                  rows:
+                    type: integer
+                  columns:
+                    type: integer
+                  schema:
+                    type: object
+                    properties:
+                      columns:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            type:
+                              type: string
+                            name:
+                              type: string
+                  createdAt:
+                    type: string
+                  updatedAt:
+                    type: string
+                  pdpEnabled:
+                    type: boolean
+                  policies:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        type:
+                          type: string
+                        name:
+                          type: string
+                        filters:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              column:
+                                type: string
+                              values:
+                                type: array
+                                items:
+                                  type: string
+                              operator:
+                                type: string
+                              not:
+                                type: boolean
+                        users:
+                          type: array
+                          items:
+                            type: integer
+                        groups:
+                          type: array
+                          items:
+                            type: object
+                            properties: {}
+                x-examples:
+                  Example 1:
+                    id: 08a061e2-12a2-4646-b4bc-20beddb403e3
+                    name: Timeline Feed
+                    description: Important
+                    rows: 1
+                    columns: 6
+                    schema:
+                      columns:
+                        - type: STRING
+                          name: Name
+                    createdAt: '2015-12-10T07:06:14Z'
+                    updatedAt: '2016-02-29T20:56:20.567Z'
+                    pdpEnabled: false
+                    policies:
+                      - id: 8
+                        type: user
+                        name: Only Show Attendees
+                        filters:
+                          - column: Attending
+                            values:
+                              - 'TRUE'
+                            operator: EQUALS
+                            not: false
+                        users:
+                          - 27
+                        groups: []
+            application/xml:
+              schema:
+                type: object
+                properties: {}
+              examples:
+                Example 1:
+                  value: '[object Object]'
+      operationId: ''
+    put:
+      summary: Update DataSet Details
+      description: |
+        Updates the specified DataSet’s metadata by providing values to parameters passed.
+
+        <!-- theme: info -->
+        > #### Appending _Data_
+        >
+        > To import **additional rows** into an existing DataSet, use the DataSet Import endpoint or the [Simple API](https://developer.domo.com/portal/d984e2fec9b18-import-data-into-data-set).
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              x-examples:
+                Example 1:
+                  name: Leonhard Euler Birthday Bash
+                  description: VIP Guest List
+                  pdpEnabled: true
+              properties:
+                name:
+                  type: string
+                  description: Name of the DataSet to update
+                description:
+                  type: string
+                  description: Description of DataSet to update
+                pdpEnabled:
+                  type: boolean
+                schema:
+                  type: object
+                  description: The current schema associated with this DataSet
+                  properties:
+                    columns:
+                      type: array
+                      description: Array of columns in the DataSet
+                      items:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                            description: Column name in the DataSet schema
+                          type:
+                            type: string
+                            description: 'Column type in the DataSet schema. Valid types are `STRING`, `DECIMAL`, `LONG`, `DOUBLE`, `DATE`, and `DATETIME`.'
+            examples:
+              Example 1:
+                value:
+                  name: Leonhard Euler Birthday Bash
+                  description: VIP Guest List
+                  pdpEnabled: true
+        description: ''
+      parameters:
+        - name: dataset_id
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                Example 1:
+                  value:
+                    id: 4405ff58-1957-45f0-82bd-914d989a3ea3
+                    name: Leonhard Euler Birthday Bash
+                    description: VIP Guest List
+                    rows: 0
+                    columns: 0
+                    schema:
+                      columns:
+                        - type: STRING
+                          name: Friend
+                        - type: STRING
+                          name: Attending
+                    owner:
+                      id: 27
+                      name: DomoSupport
+                    createdAt: '2016-06-21T17:20:36Z'
+                    updatedAt: '2016-06-21T17:48:41Z'
+                    pdpEnabled: true
+                    policies:
+                      - id: 8
+                        type: user
+                        name: Only Show Attendees
+                        filters:
+                          - column: Attending
+                            values:
+                              - 'TRUE'
+                            operator: EQUALS
+                            not: false
+                        users:
+                          - 27
+                        groups: []
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  description:
+                    type: string
+                  rows:
+                    type: integer
+                  columns:
+                    type: integer
+                  schema:
+                    type: object
+                    properties:
+                      columns:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            type:
+                              type: string
+                            name:
+                              type: string
+                  owner:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      name:
+                        type: string
+                  createdAt:
+                    type: string
+                  updatedAt:
+                    type: string
+                  pdpEnabled:
+                    type: boolean
+                  policies:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        type:
+                          type: string
+                        name:
+                          type: string
+                        filters:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              column:
+                                type: string
+                              values:
+                                type: array
+                                items:
+                                  type: string
+                              operator:
+                                type: string
+                              not:
+                                type: boolean
+                        users:
+                          type: array
+                          items:
+                            type: integer
+                        groups:
+                          type: array
+                          items:
+                            type: object
+                            properties: {}
+                x-examples:
+                  Example 1:
+                    id: 4405ff58-1957-45f0-82bd-914d989a3ea3
+                    name: Leonhard Euler Birthday Bash
+                    description: VIP Guest List
+                    rows: 0
+                    columns: 0
+                    schema:
+                      columns:
+                        - type: STRING
+                          name: Friend
+                        - type: STRING
+                          name: Attending
+                    owner:
+                      id: 27
+                      name: DomoSupport
+                    createdAt: '2016-06-21T17:20:36Z'
+                    updatedAt: '2016-06-21T17:48:41Z'
+                    pdpEnabled: true
+                    policies:
+                      - id: 8
+                        type: user
+                        name: Only Show Attendees
+                        filters:
+                          - column: Attending
+                            values:
+                              - 'TRUE'
+                            operator: EQUALS
+                            not: false
+                        users:
+                          - 27
+                        groups: []
+      operationId: ''
+    delete:
+      summary: Delete a DataSet
+      description: "Permanently deletes a DataSet\_from your Domo instance.\_This can be done for all DataSets, not just those created through the API.\n\n<!-- theme: danger -->\n\n> #### Warning\n>\n> This is destructive and cannot be reversed."
+      parameters:
+        - name: dataset_id
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '204':
+          description: Returns an empty response.
+          content:
+            application/json:
+              examples:
+                Example 1:
+                  value: HTTP/1.1 204 No Content
+    parameters:
+      - schema:
+          type: string
+        name: dataset_id
+        in: path
+        required: true
+        description: The ID of the DataSet
+  /v1/datasets:
+    post:
+      summary: Create a DataSet
+      description: 'Creates a new DataSet in your Domo instance. Once a DataSet has been created, data can be imported into the DataSet.'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              x-examples:
+                Example 1:
+                  name: Leonhard Euler Party
+                  description: Mathematician Guest List
+                  rows: 0
+                  schema:
+                    columns:
+                      - type: STRING
+                        name: Friend
+                      - type: STRING
+                        name: Attending
+              required:
+                - name
+                - schema
+              properties:
+                name:
+                  type: string
+                  description: Name of the DataSet to create
+                description:
+                  type: string
+                  description: Description of DataSet to create
+                schema:
+                  type: object
+                  description: The current schema associated with this DataSet
+                  required:
+                    - columns
+                  properties:
+                    columns:
+                      type: array
+                      description: Array of columns in the DataSet
+                      items:
+                        type: object
+                        required:
+                          - type
+                          - name
+                        properties:
+                          type:
+                            type: string
+                            description: 'Column type in the DataSet schema. Valid types are `STRING`, `DECIMAL`, `LONG`, `DOUBLE`, `DATE`, and `DATETIME`'
+                          name:
+                            type: string
+                            description: Column name in the DataSet schema
+            examples:
+              Example 1:
+                value:
+                  name: Leonhard Euler Party
+                  description: Mathematician Guest List
+                  rows: 0
+                  schema:
+                    columns:
+                      - type: STRING
+                        name: Friend
+                      - type: STRING
+                        name: Attending
+        description: ''
+      responses:
+        '201':
+          description: Returns a DataSet object when successful. The returned object will have DataSet attributes based on the information provided when the DataSet was created.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  description:
+                    type: string
+                  rows:
+                    type: integer
+                  columns:
+                    type: integer
+                  schema:
+                    type: object
+                    properties:
+                      columns:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            type:
+                              type: string
+                            name:
+                              type: string
+                  owner:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      name:
+                        type: string
+                  createdAt:
+                    type: string
+                  updatedAt:
+                    type: string
+                x-examples:
+                  Example 1:
+                    id: 4405ff58-1957-45f0-82bd-914d989a3ea3
+                    name: Leonhard Euler Party
+                    description: Mathematician Guest List
+                    rows: 0
+                    columns: 0
+                    schema:
+                      columns:
+                        - type: STRING
+                          name: Friend
+                        - type: STRING
+                          name: Attending
+                    owner:
+                      id: 27
+                      name: DomoSupport
+                    createdAt: '2016-06-21T17:20:36Z'
+                    updatedAt: '2016-06-21T17:20:36Z'
+              examples:
+                Example 1:
+                  value:
+                    id: 4405ff58-1957-45f0-82bd-914d989a3ea3
+                    name: Leonhard Euler Party
+                    description: Mathematician Guest List
+                    rows: 0
+                    columns: 0
+                    schema:
+                      columns:
+                        - type: STRING
+                          name: Friend
+                        - type: STRING
+                          name: Attending
+                    owner:
+                      id: 27
+                      name: DomoSupport
+                    createdAt: '2016-06-21T17:20:36Z'
+                    updatedAt: '2016-06-21T17:20:36Z'
+    get:
+      summary: List DataSets
+      description: "Get a list of all DataSets\_in your Domo instance."
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+          description: The amount of DataSets to return in the list. The default is 50 and the maximum is 50.
+          example: 3
+        - name: offset
+          in: query
+          schema:
+            type: integer
+          description: The offset of the DataSet ID to begin list of users within the response.
+          example: 0
+        - name: sort
+          in: query
+          schema:
+            $ref: '#/components/schemas/DataSourceListOrderBy'
+          description: The order to return the DataSets in.
+          example: createdAt
+        - schema:
+            type: string
+          in: query
+          name: nameLike
+          description: 'If included, will limit the list of DataSets to those with names that contain the string passed in. `nameLike` is case insensitive.'
+      responses:
+        '200':
+          description: Returns all DataSet objects that meet argument criteria from original request.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type: string
+                    rows:
+                      type: integer
+                    columns:
+                      type: integer
+                    createdAt:
+                      type: string
+                    updatedAt:
+                      type: string
+                    description:
+                      type: string
+                x-examples:
+                  Example 1:
+                    - id: 08a061e2-12a2-4646-b4bc-20beddb403e3
+                      name: Questions regarding Euclid's Fundamental Theorem of Arithmetic
+                      rows: 1
+                      columns: 6
+                      createdAt: '2015-12-10T07:06:14Z'
+                      updatedAt: '2016-02-29T20:56:20.567Z'
+                    - id: 317970a1-6a6e-4f70-8e09-44cf5f34cf44
+                      name: Ideas Regarding Physics
+                      description: Notes
+                      rows: 1289280
+                      columns: 9
+                      createdAt: '2013-09-24T20:51:48Z'
+                      updatedAt: '2016-02-29T20:56:07.619Z'
+                    - id: cc22901d-c856-47c5-89a3-5228a4fa5663
+                      name: Rene Descartes Mentions
+                      description: ''
+                      rows: 194723231
+                      columns: 12
+                      createdAt: '2014-05-01T22:01:17Z'
+                      updatedAt: '2016-02-29T20:56:05.034Z'
+                    - id: 36ea3481-5b90-4181-a4a8-4d9388e85d9e
+                      name: Symbolic Logic
+                      description: ''
+                      rows: 349660
+                      columns: 12
+                      createdAt: '2014-11-26T18:29:09Z'
+                      updatedAt: '2016-02-29T20:55:50.337Z'
+              examples:
+                Example 1:
+                  value:
+                    - id: 08a061e2-12a2-4646-b4bc-20beddb403e3
+                      name: Questions regarding Euclid's Fundamental Theorem of Arithmetic
+                      rows: 1
+                      columns: 6
+                      createdAt: '2015-12-10T07:06:14Z'
+                      updatedAt: '2016-02-29T20:56:20.567Z'
+                    - id: 317970a1-6a6e-4f70-8e09-44cf5f34cf44
+                      name: Ideas Regarding Physics
+                      description: Notes
+                      rows: 1289280
+                      columns: 9
+                      createdAt: '2013-09-24T20:51:48Z'
+                      updatedAt: '2016-02-29T20:56:07.619Z'
+                    - id: cc22901d-c856-47c5-89a3-5228a4fa5663
+                      name: Rene Descartes Mentions
+                      description: ''
+                      rows: 194723231
+                      columns: 12
+                      createdAt: '2014-05-01T22:01:17Z'
+                      updatedAt: '2016-02-29T20:56:05.034Z'
+                    - id: 36ea3481-5b90-4181-a4a8-4d9388e85d9e
+                      name: Symbolic Logic
+                      description: ''
+                      rows: 349660
+                      columns: 12
+                      createdAt: '2014-11-26T18:29:09Z'
+                      updatedAt: '2016-02-29T20:55:50.337Z'
+  '/v1/datasets/query/execute/{dataset_id}':
+    post:
+      summary: Query a DataSet
+      description: Queries the data in an existing Domo DataSet
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              x-examples:
+                Example 1:
+                  sql: SELECT * FROM table
+              properties:
+                sql:
+                  type: string
+              required:
+                - sql
+            examples:
+              Example 1:
+                value:
+                  sql: SELECT * FROM table
+        description: ''
+      parameters:
+        - name: dataset_id
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Returns data from the DataSet based on your SQL query.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  datasource:
+                    type: string
+                  columns:
+                    type: array
+                    items:
+                      type: string
+                  metadata:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                        dataSourceId:
+                          type: string
+                        maxLength:
+                          type: integer
+                        minLength:
+                          type: integer
+                        periodIndex:
+                          type: integer
+                  rows:
+                    type: array
+                    items:
+                      type: string
+                  numRows:
+                    type: integer
+                  numColumns:
+                    type: integer
+                  fromcache:
+                    type: boolean
+                x-examples:
+                  Example 1:
+                    datasource: ce79d23f-ef7d-4318-9787-ebde54a8c5b4
+                    columns:
+                      - Description
+                      - '% of Inventory Value'
+                      - Cost
+                      - Total Inventory Value
+                      - _BATCH_ID_
+                      - _BATCH_LAST_RUN_
+                    metadata:
+                      - type: STRING
+                        dataSourceId: ce79d23f-ef7d-4318-9787-ebde54a8c5b4
+                        maxLength: -1
+                        minLength: -1
+                        periodIndex: 0
+                      - type: DOUBLE
+                        dataSourceId: ce79d23f-ef7d-4318-9787-ebde54a8c5b4
+                        maxLength: -1
+                        minLength: -1
+                        periodIndex: 0
+                      - type: LONG
+                        dataSourceId: ce79d23f-ef7d-4318-9787-ebde54a8c5b4
+                        maxLength: -1
+                        minLength: -1
+                        periodIndex: 0
+                      - type: LONG
+                        dataSourceId: ce79d23f-ef7d-4318-9787-ebde54a8c5b4
+                        maxLength: -1
+                        minLength: -1
+                        periodIndex: 0
+                      - type: DOUBLE
+                        dataSourceId: ce79d23f-ef7d-4318-9787-ebde54a8c5b4
+                        maxLength: -1
+                        minLength: -1
+                        periodIndex: 0
+                      - type: DATETIME
+                        dataSourceId: ce79d23f-ef7d-4318-9787-ebde54a8c5b4
+                        maxLength: -1
+                        minLength: -1
+                        periodIndex: 0
+                    rows:
+                      - - Maintenance
+                        - 0.0035
+                        - 35000
+                        - 10000000
+                        - 410
+                        - '2019-03-19T18:49:02'
+                      - - Labor
+                        - 0.007
+                        - 70000
+                        - 10000000
+                        - 410
+                        - '2019-03-19T18:49:02'
+                      - - Utilities
+                        - 0.0087
+                        - 87000
+                        - 10000000
+                        - 410
+                        - '2019-03-19T18:49:02'
+                      - - Space
+                        - 0.025
+                        - 250000
+                        - 10000000
+                        - 410
+                        - '2019-03-19T18:49:02'
+                    numRows: 4
+                    numColumns: 6
+                    fromcache: true
+              examples:
+                Example 1:
+                  value:
+                    datasource: ce79d23f-ef7d-4318-9787-ebde54a8c5b4
+                    columns:
+                      - Description
+                      - '% of Inventory Value'
+                      - Cost
+                      - Total Inventory Value
+                      - _BATCH_ID_
+                      - _BATCH_LAST_RUN_
+                    metadata:
+                      - type: STRING
+                        dataSourceId: ce79d23f-ef7d-4318-9787-ebde54a8c5b4
+                        maxLength: -1
+                        minLength: -1
+                        periodIndex: 0
+                      - type: DOUBLE
+                        dataSourceId: ce79d23f-ef7d-4318-9787-ebde54a8c5b4
+                        maxLength: -1
+                        minLength: -1
+                        periodIndex: 0
+                      - type: LONG
+                        dataSourceId: ce79d23f-ef7d-4318-9787-ebde54a8c5b4
+                        maxLength: -1
+                        minLength: -1
+                        periodIndex: 0
+                      - type: LONG
+                        dataSourceId: ce79d23f-ef7d-4318-9787-ebde54a8c5b4
+                        maxLength: -1
+                        minLength: -1
+                        periodIndex: 0
+                      - type: DOUBLE
+                        dataSourceId: ce79d23f-ef7d-4318-9787-ebde54a8c5b4
+                        maxLength: -1
+                        minLength: -1
+                        periodIndex: 0
+                      - type: DATETIME
+                        dataSourceId: ce79d23f-ef7d-4318-9787-ebde54a8c5b4
+                        maxLength: -1
+                        minLength: -1
+                        periodIndex: 0
+                    rows:
+                      - - Maintenance
+                        - 0.0035
+                        - 35000
+                        - 10000000
+                        - 410
+                        - '2019-03-19T18:49:02'
+                      - - Labor
+                        - 0.007
+                        - 70000
+                        - 10000000
+                        - 410
+                        - '2019-03-19T18:49:02'
+                      - - Utilities
+                        - 0.0087
+                        - 87000
+                        - 10000000
+                        - 410
+                        - '2019-03-19T18:49:02'
+                      - - Space
+                        - 0.025
+                        - 250000
+                        - 10000000
+                        - 410
+                        - '2019-03-19T18:49:02'
+                    numRows: 4
+                    numColumns: 6
+                    fromcache: true
+  '/v1/datasets/{dataset_id}/data':
+    put:
+      summary: Import data into DataSet
+      description: |
+        Import data into a DataSet in your Domo instance. You can replace everything or append new data.
+      requestBody:
+        content:
+          text/csv:
+            schema:
+              type: string
+              description: CSV data according to RFC 4180 format.
+            examples:
+              'Example 1':
+                value: |
+                  Friend,Attending
+                  Isaac Newton,Yes
+                  Pythagoras,No
+                  Carl Friedrich Gauss,Yes
+                  Ada Lovelace,Yes
+              'Example 2':
+                value: |
+                  name,role,quote,side
+                  Leia Organa,Rebel Leader,"Help me, Obi-Wan Kenobi. You're my only hope.",light
+                  Qui-Gon Jinn,,,
+                  Darth Vader,Sith Lord,I find your lack of faith disturbing.,dark
+              'Example 3':
+                value: |
+                  "name","age"
+                  "Smith, Jacob","78"
+                  "Corsa, Claire","56"
+                  "Thomas, Liz","33"
+        description: |
+          The schema needs to match, even when replacing.
+          
+          The only supported content type for this endpoint is CSV. However, if you use [the Simple API](https://developer.domo.com/portal/d984e2fec9b18-import-data-into-data-set), it will automatically convert JSON to CSV.
+
+          > The Domo specification used for representing data grids in CSV format closely follows the RFC standard for CSV ([RFC-4180](https://datatracker.ietf.org/doc/html/rfc4180)).
+
+          ```
+          Content-Type: text/csv
+
+          Friend,Attending
+          Isaac Newton,Yes
+          Pythagoras,No
+          Carl Friedrich Gauss,Yes
+          Ada Lovelace,Yes
+          ```
+      parameters:
+        - name: dataset_id
+          in: path
+          schema:
+            type: string
+          required: true
+        - name: updateMethod
+          in: query
+          description: |
+            Specifies how the data import should update the DataSet. 
+            
+            Defaults to `REPLACE` if not specified. 
+            
+            Case-sensitive; must be uppercase. Falls back to REPLACE if given an invalid value.
+          required: false
+          schema:
+            type: string
+            default: REPLACE
+            enum:
+              - REPLACE
+              - APPEND
+      responses:
+        '204':
+          description: Success! Returns an empty response body.
+        '400':
+          description: Bad Request — Invalid input data or schema.
+          content:
+            application/json:
+              schema:
+                type: object
+                example: {"status":400,"statusReason":"Bad Request","message":"Data import failed for dataset e6277565-39fc-42d7-835a-5cfe2905a840.","toe":"CA6JIHTO46-28C5D-UEQ7I"}
+        '401':
+          description: Unauthorized — Expired access token, etc.
+          headers:
+            WWW-Authenticate:
+              description: >-
+                Error codes and descriptions.
+              schema:
+                type: string
+                example: >-
+                  Bearer error="invalid_token", error_description="An error occurred while attempting to decode the Jwt: Jwt expired at 2025-04-25T04:28:44Z", error_uri="https://tools.ietf.org/html/rfc6750#section-3.1"
+
+        '403':
+          description: Forbidden — Invalid or missing access token.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 403
+                  toe:
+                    type: string
+                    description: Thread of Execution — a way Domo Support can track down a problem
+                    example: 694M4LH50R-CFNR0-N0VD2
+        
+    get:
+      summary: Export Data from DataSet
+      description: |
+        Export data from a DataSet in your Domo instance.
+        
+        > Data types will be exported as they are currently stored in the dataset. In addition, the only supported export type is CSV.
+      parameters:
+        - name: includeHeader
+          in: query
+          schema:
+            type: boolean
+            default: false
+          description: Include table header row
+        - name: fileName
+          in: query
+          schema:
+            type: string
+          example: math-party.csv
+          description: The filename of the exported csv
+        - name: dataset_id
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Returns a raw CSV in the response body or error for the outcome of data being exported into DataSet.
+          content:
+            text/csv:
+              schema:
+                type: string
+              examples: 
+                'Example 1':
+                  value: |
+                    name,role,quote,side
+                    Leia Organa,Rebel Leader,"Help me, Obi-Wan Kenobi. You're my only hope.",light
+                    Qui-Gon Jinn,,,
+                    Darth Vader,Sith Lord,I find your lack of faith disturbing.,dark
+          headers: {}
+    parameters:
+      - schema:
+          type: string
+          example: 08a061e2-12a2-4646-b4bc-20beddb403e3
+        name: dataset_id
+        in: path
+        required: true
+        description: ID of the DataSet
+  '/v1/datasets/{dataset_id}/policies/{pdp_id}':
+    get:
+      summary: Retrieve a Personalized Data Permission (PDP) policy
+      description: "Retrieve\_a policy from a DataSet within\_Domo.\_A DataSet is required for a PDP policy to exist."
+      parameters:
+        - name: dataset_id
+          in: path
+          schema:
+            type: string
+          required: true
+        - name: pdp_id
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Returns a subset of the DataSet object specific to the data permission policy.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  type:
+                    type: string
+                  name:
+                    type: string
+                  filters:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        column:
+                          type: string
+                        values:
+                          type: array
+                          items:
+                            type: string
+                        operator:
+                          type: string
+                        not:
+                          type: boolean
+                  users:
+                    type: array
+                    items:
+                      type: integer
+                  groups:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                x-examples:
+                  Example 1:
+                    id: 8
+                    type: user
+                    name: Only Show Attendees
+                    filters:
+                      - column: Attending
+                        values:
+                          - 'TRUE'
+                        operator: EQUALS
+                        not: false
+                    users:
+                      - 27
+                    groups: []
+              examples:
+                Example 1:
+                  value:
+                    id: 8
+                    type: user
+                    name: Only Show Attendees
+                    filters:
+                      - column: Attending
+                        values:
+                          - 'TRUE'
+                        operator: EQUALS
+                        not: false
+                    users:
+                      - 27
+                    groups: []
+    put:
+      summary: Update a Personalized Data Permission (PDP) policy
+      description: "Update\_the specific PDP policy for a DataSet by providing values to parameters passed.\n\n> The number of characters for the list of values for a single PDP policy, including a delimiter character for each value, must be less than 255 characters."
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              x-examples:
+                Example 1:
+                  name: Not Attending
+                  filters:
+                    - column: Attending
+                      values:
+                        - 'TRUE'
+                      operator: EQUALS
+                      not: true
+              description: Name of the Policy
+              properties:
+                name:
+                  type: string
+                filters:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      column:
+                        type: string
+                        description: Name of the column to filter on
+                      values:
+                        type: array
+                        description: Values to filter on
+                        items:
+                          type: string
+                      operator:
+                        type: string
+                        description: Matching operator (EQUALS)
+                      not:
+                        type: boolean
+                        description: Determines if NOT is applied to the filter operation
+                type:
+                  type: string
+                  description: Type of policy (user or system)
+                users:
+                  type: array
+                  description: List of user IDs the policy applies to
+                  items:
+                    type: integer
+                groups:
+                  type: array
+                  description: List of group IDs the policy applies to
+                  items:
+                    type: integer
+            examples:
+              Example 1:
+                value:
+                  name: Not Attending
+                  filters:
+                    - column: Attending
+                      values:
+                        - 'TRUE'
+                      operator: EQUALS
+                      not: true
+      parameters:
+        - name: dataset_id
+          in: path
+          schema:
+            type: string
+          required: true
+        - name: pdp_id
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Returns a subset of the DataSet object specific to the data permission policy.
+          content:
+            application/json:
+              schema:
+                type: object
+                x-examples:
+                  Example 1:
+                    id: 8
+                    type: user
+                    name: Not Attending
+                    filters:
+                      - column: Attending
+                        values:
+                          - 'TRUE'
+                        operator: EQUALS
+                        not: true
+                    users:
+                      - 27
+                    groups: []
+                properties:
+                  id:
+                    type: integer
+                  type:
+                    type: string
+                  name:
+                    type: string
+                  filters:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        column:
+                          type: string
+                        values:
+                          type: array
+                          items:
+                            type: string
+                        operator:
+                          type: string
+                        not:
+                          type: boolean
+                  users:
+                    type: array
+                    items:
+                      type: integer
+                  groups:
+                    type: array
+                    items:
+                      type: integer
+              examples:
+                Example 1:
+                  value:
+                    id: 8
+                    type: user
+                    name: Not Attending
+                    filters:
+                      - column: Attending
+                        values:
+                          - 'TRUE'
+                        operator: EQUALS
+                        not: true
+                    users:
+                      - 27
+                    groups:
+                      - 4
+    delete:
+      summary: Delete a Personlized Data Permission (PDP) Policy
+      description: "Permanently deletes\_a PDP policy on a DataSet in your Domo instance.\n\n<!-- theme: danger -->\n\n> #### Warning\n>\n> This is destructive and cannot be reversed."
+      parameters:
+        - name: dataset_id
+          in: path
+          schema:
+            type: string
+          required: true
+        - name: pdp_id
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '204':
+          description: Returns a DataSet and PDP object and parameter of success or error based on whether the Personalized Data Permission (PDP) policy ID being valid.
+      operationId: ''
+  '/v1/datasets/{dataset_id}/policies':
+    post:
+      summary: Create a Personalized Data Permission (PDP) Policy
+      description: "Create a PDP policy for user and or group access to data within a DataSet. \_Users and groups must exist before creating PDP policy.\n\n> The number of characters for the list of values for a single PDP policy, including a delimiter character for each value, must be less than 255 characters."
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              x-examples:
+                Example 1:
+                  name: Only Show Attendees
+                  filters:
+                    - column: Attending
+                      values:
+                        - 'TRUE'
+                      operator: EQUALS
+                  users:
+                    - 27
+              properties:
+                name:
+                  type: string
+                  description: Name of the Policy
+                filters:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      column:
+                        type: string
+                        description: Name of the column to filter on
+                      values:
+                        type: array
+                        description: Values to filter on
+                        items:
+                          type: string
+                      operator:
+                        type: string
+                        description: Matching operator (EQUALS)
+                      not:
+                        type: boolean
+                        description: Determines if NOT is applied to the filter operation
+                    required:
+                      - column
+                      - values
+                      - operator
+                users:
+                  type: array
+                  description: List of user IDs the policy applies to
+                  items:
+                    type: integer
+                groups:
+                  type: array
+                  description: List of group IDs the policy applies to
+                  items:
+                    type: integer
+                type:
+                  type: string
+                  description: Type of policy (user or system)
+              required:
+                - name
+                - filters
+            examples:
+              Example 1:
+                value:
+                  name: Only Show Attendees
+                  filters:
+                    - column: Attending
+                      values:
+                        - 'TRUE'
+                      operator: EQUALS
+                  users:
+                    - 27
+        description: ''
+      parameters:
+        - name: dataset_id
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '201':
+          description: Returns a subset of the DataSet object specific to the data permission policy.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  type:
+                    type: string
+                  name:
+                    type: string
+                  filters:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        column:
+                          type: string
+                        values:
+                          type: array
+                          items:
+                            type: string
+                        operator:
+                          type: string
+                        not:
+                          type: boolean
+                  users:
+                    type: array
+                    items:
+                      type: integer
+                  groups:
+                    type: array
+                    items:
+                      type: object
+                      properties: {}
+                x-examples:
+                  Example 1:
+                    id: 8
+                    type: user
+                    name: Only Show Attendees
+                    filters:
+                      - column: Attending
+                        values:
+                          - 'TRUE'
+                        operator: EQUALS
+                        not: false
+                    users:
+                      - 27
+                    groups: []
+              examples:
+                Example 1:
+                  value:
+                    id: 8
+                    type: user
+                    name: Only Show Attendees
+                    filters:
+                      - column: Attending
+                        values:
+                          - 'TRUE'
+                        operator: EQUALS
+                        not: false
+                    users:
+                      - 27
+                    groups: []
+    get:
+      summary: List Personalized Data Permission (PDP) Policies
+      description: List the Personalized Data Permission (PDP) policies for a specified DataSet.
+      parameters:
+        - name: dataset_id
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Returns all PDP policies that are applied to the DataSet specified in request.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    type:
+                      type: string
+                    name:
+                      type: string
+                    filters:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          column:
+                            type: string
+                          values:
+                            type: array
+                            items:
+                              type: string
+                          operator:
+                            type: string
+                          not:
+                            type: boolean
+                    users:
+                      type: array
+                      items:
+                        type: integer
+                    groups:
+                      type: array
+                      items:
+                        type: object
+                        properties: {}
+                x-examples:
+                  Example 1:
+                    - id: 8
+                      type: user
+                      name: Only Show Attendees
+                      filters:
+                        - column: Attending
+                          values:
+                            - 'TRUE'
+                          operator: EQUALS
+                          not: false
+                      users:
+                        - 27
+                      groups: []
+              examples:
+                Example 1:
+                  value:
+                    - id: 8
+                      type: user
+                      name: Only Show Attendees
+                      filters:
+                        - column: Attending
+                          values:
+                            - 'TRUE'
+                          operator: EQUALS
+                          not: false
+                      users:
+                        - 27
+                      groups: []

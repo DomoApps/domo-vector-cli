@@ -1,0 +1,153 @@
+openapi: 3.1.0
+x-stoplight:
+  id: i19jain6fvwjj
+info:
+  title: Activity Log API
+  version: '1.0'
+  description: |-
+    The Activity Log API enables retrieving activity log entries from your Domo instance.
+
+    ## Activity Log Entry Object
+
+    ## Attributes
+
+    Property Name | Type | Description
+    ------- | ------- | -------
+    userName | String | The name of the user
+    userId | String | The id of the user
+    userType | String | Type of user
+    actorId | Long | Id of proxying user if applicable
+    actorName | String | Name of user performing the proxy if applicable
+    objectName | String | Name of object being affected
+    objectId | String | The ID of the object affected
+    objectType | String | The type of object affected
+    additionalComment | String | Description of the log entry, with additional information if applicable
+    time | String | The time the event took place
+    eventText | String | Text describing the main event of the log entry
+    device | String | The device type the event came from
+    browserDetails | String | The acting users browser details
+    ipAddress | String | The ip address of where the event took place
+servers:
+  - url: 'https://api.domo.com'
+    description: Domo API
+paths:
+  /v1/audit:
+    get:
+      summary: Retrieve Activity Log Entries
+      tags: []
+      responses:
+        '200':
+          description: |-
+            ```text
+            HTTP/1.1 200 OK
+            Content-Type: application/json
+            ```
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  actionType:
+                    type: string
+                  actorId:
+                    type: integer
+                  actorName:
+                    type: string
+                  additionalComment:
+                    type: string
+                  browserDetails:
+                    type: string
+                  device:
+                    type: string
+                  eventText:
+                    type: string
+                  ipAddress:
+                    type: string
+                  objectId:
+                    type: string
+                  objectName:
+                    type: string
+                  objectType:
+                    type: string
+                  time:
+                    type: string
+                  userId:
+                    type: string
+                  userName:
+                    type: string
+                  userType:
+                    type: string
+                x-examples:
+                  Example 1:
+                    actionType: VIEWED
+                    actorId: 0
+                    actorName: ''
+                    additionalComment: Leonard Euler viewed page Intro to Domo.
+                    browserDetails: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36'
+                    device: desktop
+                    eventText: Viewed page
+                    ipAddress: 50.207.241.61
+                    objectId: '663909457'
+                    objectName: Intro to Domo
+                    objectType: PAGE
+                    time: '2017-12-13 10:57:35 PM'
+                    userId: '1619916076'
+                    userName: Leonard Euler
+                    userType: USER
+              examples:
+                Example 1:
+                  value:
+                    actionType: VIEWED
+                    actorId: 0
+                    actorName: ''
+                    additionalComment: Leonard Euler viewed page Intro to Domo.
+                    browserDetails: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36'
+                    device: desktop
+                    eventText: Viewed page
+                    ipAddress: 50.207.241.61
+                    objectId: '663909457'
+                    objectName: Intro to Domo
+                    objectType: PAGE
+                    time: '2017-12-13 10:57:35 PM'
+                    userId: '1619916076'
+                    userName: Leonard Euler
+                    userType: USER
+      operationId: get-v1-audit
+      description: |
+        Retrieves activity log entries
+      parameters:
+        - schema:
+            type: string
+          in: query
+          name: user
+          description: The Id of the user
+        - schema:
+            type: number
+          in: query
+          name: start
+          description: The start time(milliseconds) of when you want to receive log events
+          required: true
+        - schema:
+            type: number
+          in: query
+          name: end
+          description: The end time(milliseconds) of when you want to receive log events
+        - schema:
+            type: integer
+          in: query
+          name: limit
+          description: 'The maximum number of events you want to retrieve(default is 50, maximum of 1000)'
+        - schema:
+            type: integer
+          in: query
+          name: offset
+          description: The offset location of events you retrieve(default is 0)
+    parameters: []
+components:
+  schemas: {}
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+security:
+  - bearerAuth: []

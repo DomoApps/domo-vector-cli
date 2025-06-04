@@ -1,0 +1,142 @@
+{
+  "openapi": "3.1.0",
+  "x-stoplight": {
+    "id": "n5e2b01otbuyy"
+  },
+  "info": {
+    "version": "1.0",
+    "title": "Customer Instance APIs",
+    "description": "APIs available on the customer instance. "
+  },
+  "servers": [
+    {
+      "url": "https://{customer}.domo.com",
+      "description": "Domo Instance Domain",
+      "variables": {
+        "customer": {
+          "default": ""
+        }
+      }
+    }
+  ],
+  "paths": {
+    "/api/content/v2/authentication": {
+      "post": {
+        "summary": "Create Session Identifier",
+        "description": "Create a Session Token to be used within the `X-DOMO-Authentication` header for endpoints that support this form of authentication.",
+        "operationId": "post-api-content-v2-authentication",
+        "parameters": [
+          {
+            "name": "Origin",
+            "in": "header",
+            "description": "Must match `https://{customer}.domo.com`",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "_dsidv1",
+            "in": "cookie",
+            "description": "Session Identifier for browser clients. Required for `method: exptoken`",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "method": {
+                    "enum": [
+                      "password",
+                      "exptoken"
+                    ],
+                    "description": "Authentication method used"
+                  },
+                  "emailAddress": {
+                    "type": "string",
+                    "description": "Required when `method: password`",
+                    "format": "email",
+                    "examples": [
+                      "user@customer.example"
+                    ]
+                  },
+                  "password": {
+                    "type": "string",
+                    "description": "Required when `method: password`",
+                    "format": "password",
+                    "examples": [
+                      "hunter2"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "userId": {
+                      "type": "integer",
+                      "description": "Id of authenticated user"
+                    },
+                    "sessionToken": {
+                      "type": "string",
+                      "description": "Session token to be used in future authentication requests",
+                      "examples": [
+                        "eyJ0aGlzIjogImlzIGJhc2U2NCJ9"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "userId",
+                    "sessionToken"
+                  ],
+                  "x-examples": {
+                    "Example 1": {
+                      "userId": 1114340149,
+                      "success": true,
+                      "sessionToken": "eyJwidG9lcyI6IlVOS05PV05TSUQiLCJ1c2VySWQiOiIxMTE0MzQwMTQ5In0%3D",
+                      "twoFactorInfo": {
+                        "token": null,
+                        "key": null,
+                        "status": "VALID",
+                        "phoneMask": null
+                      },
+                      "userRole": "Privileged"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "servers": [
+          {
+            "url": "https://{customer}.domo.com",
+            "description": "Customer Domain",
+            "variables": {
+              "customer": {
+                "description": "Customer identifier of Domo Instance",
+                "default": ""
+              }
+            }
+          }
+        ],
+        "x-stoplight": {
+          "id": "uz0qbz2g53w3d"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,263 @@
+openapi: 3.1.0
+x-stoplight:
+  id: uc9ls4li6ny8s
+info:
+  title: Embed Token API
+  version: '1.0'
+  description: |
+    The Embed Token API allows you to automate the creation of embed tokens for use with programmatic filtering. An embed token encapsulates the authentication needed to access a privately embed card or dashboard and it includes any filters that have been set on this card or dashboard.
+servers:
+  - url: 'https://api.domo.com'
+    description: Domo API Server
+paths:
+  /v1/cards/embed/auth:
+    post:
+      summary: Create an embed token (Cards)
+      operationId: post-v1-stories-embed-auth
+      responses:
+        '200':
+          description: Returns a DataSet object when successful. The returned object will have DataSet attributes based on the information that was provided when DataSet was created from the Stream created.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  authentication:
+                    type: string
+                x-examples:
+                  Example 1:
+                    authentication: thisisafakeauthenticationhbGciOiJIUzI1NiJ9.eyJzdWIiOiI0MDAxOTY1NCIsIm5iZiI6MTU3OTY0NjE2NCwiaXNzIjoiYXB2F0ZXdheSIsImVtYiI6WyJ7XCJ0b2tlblwiOlwiYnFvN2VcIixcImxpbmtUeXBlXCI6XCJTRUFSQ0hBQkxFXCIsXCJwZXJtaXNzaW9uc1wiOltcIlJFQURcIl19Il0sII6MTU3OTY3NDk3NCwiaWF0Ir5h3joxNTc5NjQ2MTc0LCJqdGkiOiI3MTBwODRmMy094n2S3FmLTRjZWUtYTczZC00ZmNjMWU4OTViZmQifQ.ET0s7o49vLvj2MUwOALfayR7_vzEIMn5TRoTjq3TPo
+              examples:
+                Example 1:
+                  value:
+                    authentication: thisisafakeauthenticationhbGciOiJIUzI1NiJ9.eyJzdWIiOiI0MDAxOTY1NCIsIm5iZiI6MTU3OTY0NjE2NCwiaXNzIjoiYXB2F0ZXdheSIsImVtYiI6WyJ7XCJ0b2tlblwiOlwiYnFvN2VcIixcImxpbmtUeXBlXCI6XCJTRUFSQ0hBQkxFXCIsXCJwZXJtaXNzaW9uc1wiOltcIlJFQURcIl19Il0sII6MTU3OTY3NDk3NCwiaWF0Ir5h3joxNTc5NjQ2MTc0LCJqdGkiOiI3MTBwODRmMy094n2S3FmLTRjZWUtYTczZC00ZmNjMWU4OTViZmQifQ.ET0s7o49vLvj2MUwOALfayR7_vzEIMn5TRoTjq3TPo
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              x-examples:
+                Example 1:
+                  sessionLength: 1440
+                  authorizations:
+                    - token: bc36f
+                      permissions:
+                        - READ
+                        - FILTER
+                        - EXPORT
+                      filters:
+                        - column: State
+                          operator: IN
+                          values:
+                            - California
+                            - New York
+                            - Ohio
+              properties:
+                sessionLength:
+                  type: integer
+                  description: 'The amount of minutes the session will be valid for. If a value is not specified here and a customer has specified a customer session idle length, then that number will be used instead. If a customer has not specified a session idle length, then a default value of 8 hours is used. The value specified here in the api cannot be greater than the customer sessions idle length if one has been set or if one hasn''t been set, the value cannot be greater than the default value of 8 hours.'
+                authorizations:
+                  type: array
+                  description: A list of embed authorization objects
+                  items:
+                    type: object
+                    properties:
+                      token:
+                        type: string
+                        description: The embed token associated with the embedded content.
+                      permissions:
+                        type: array
+                        description: 'A list of permissions associated with this embedded token. The following values should always be used "READ", "FILTER", "EXPORT".'
+                        items:
+                          type: string
+                      filters:
+                        type: array
+                        description: A list of filter objects to be applied to the embedded content when viewed.
+                        items:
+                          type: object
+                          properties:
+                            column:
+                              type: string
+                              description: The name of the column in the dataset that will be filtered. Please note the column name is case sensitive.
+                            operator:
+                              type: string
+                              description: 'An operator describing the type of filter operation to be performed on the dataset. The operators that can be used are as follows: "IN", "NOT_IN", "EQUALS", "NOT_EQUALS", "GREATER_THAN", "GREAT_THAN_EQUALS_TO", "LESS_THAN", "LESS_THAN_EQUALS_TO".'
+                            values:
+                              type: array
+                              description: A list of values to be used in the filter. The values must be in quotes even if it is a numeric type and it must be in a list even if there is only one.
+                              items:
+                                type: string
+                          required:
+                            - column
+                            - operator
+                            - values
+                    required:
+                      - token
+                      - permissions
+              required:
+                - authorizations
+            examples:
+              Example 1:
+                value:
+                  sessionLength: 1440
+                  authorizations:
+                    - token: bc36f
+                      permissions:
+                        - READ
+                        - FILTER
+                        - EXPORT
+                      filters:
+                        - column: State
+                          operator: IN
+                          values:
+                            - California
+                            - New York
+                            - Ohio
+        description: |
+          ### Sample Filter Objects
+          Filter by column "Count" for values that are greater than the value 5.
+
+          ```json
+          [{"column": "Count", "operator": "GREATER_THAN", "values": ["4"]}]
+          ```
+
+          Filter by column "Date" for values between the following dates: "2020-01-15" and "2020-01-21".
+
+          ```json
+          [{"column":"Date","operand":"BETWEEN","values":["2020-01-15","2020-01-21"]}]
+          ```
+          Filter by column "State" for values that are one of the following: "California", "New York", or "Ohio".
+
+          ```json
+          [{"column":"State","operand":"IN","values":["California", "New York", "Ohio"]}]
+          ```
+    parameters: []
+  /v1/stories/embed/auth:
+    post:
+      summary: Create an embed token (Dashboard)
+      operationId: post-v1-stories-embed-auth
+      responses:
+        '200':
+          description: Returns a DataSet object when successful. The returned object will have DataSet attributes based on the information that was provided when DataSet was created from the Stream created.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  authentication:
+                    type: string
+                x-examples:
+                  Example 1:
+                    authentication: thisisafakeauthenticationhbGciOiJIUzI1NiJ9.eyJzdWIiOiI0MDAxOTY1NCIsIm5iZiI6MTU3OTY0NjE2NCwiaXNzIjoiYXB2F0ZXdheSIsImVtYiI6WyJ7XCJ0b2tlblwiOlwiYnFvN2VcIixcImxpbmtUeXBlXCI6XCJTRUFSQ0hBQkxFXCIsXCJwZXJtaXNzaW9uc1wiOltcIlJFQURcIl19Il0sII6MTU3OTY3NDk3NCwiaWF0Ir5h3joxNTc5NjQ2MTc0LCJqdGkiOiI3MTBwODRmMy094n2S3FmLTRjZWUtYTczZC00ZmNjMWU4OTViZmQifQ.ET0s7o49vLvj2MUwOALfayR7_vzEIMn5TRoTjq3TPo
+              examples:
+                Example 1:
+                  value:
+                    authentication: thisisafakeauthenticationhbGciOiJIUzI1NiJ9.eyJzdWIiOiI0MDAxOTY1NCIsIm5iZiI6MTU3OTY0NjE2NCwiaXNzIjoiYXB2F0ZXdheSIsImVtYiI6WyJ7XCJ0b2tlblwiOlwiYnFvN2VcIixcImxpbmtUeXBlXCI6XCJTRUFSQ0hBQkxFXCIsXCJwZXJtaXNzaW9uc1wiOltcIlJFQURcIl19Il0sII6MTU3OTY3NDk3NCwiaWF0Ir5h3joxNTc5NjQ2MTc0LCJqdGkiOiI3MTBwODRmMy094n2S3FmLTRjZWUtYTczZC00ZmNjMWU4OTViZmQifQ.ET0s7o49vLvj2MUwOALfayR7_vzEIMn5TRoTjq3TPo
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              x-examples:
+                Example 1:
+                  sessionLength: 1440
+                  authorizations:
+                    - token: bc36f
+                      permissions:
+                        - READ
+                        - FILTER
+                        - EXPORT
+                      filters:
+                        - column: State
+                          operator: IN
+                          values:
+                            - California
+                            - New York
+                            - Ohio
+              properties:
+                sessionLength:
+                  type: integer
+                  description: 'The amount of minutes the session will be valid for. If a value is not specified here and a customer has specified a customer session idle length, then that number will be used instead. If a customer has not specified a session idle length, then a default value of 8 hours is used. The value specified here in the api cannot be greater than the customer sessions idle length if one has been set or if one hasn''t been set, the value cannot be greater than the default value of 8 hours.'
+                authorizations:
+                  type: array
+                  description: A list of embed authorization objects
+                  items:
+                    type: object
+                    properties:
+                      token:
+                        type: string
+                        description: The embed token associated with the embedded content.
+                      permissions:
+                        type: array
+                        description: 'A list of permissions associated with this embedded token. The following values should always be used "READ", "FILTER", "EXPORT".'
+                        items:
+                          type: string
+                      filters:
+                        type: array
+                        description: A list of filter objects to be applied to the embedded content when viewed.
+                        items:
+                          type: object
+                          properties:
+                            column:
+                              type: string
+                              description: The name of the column in the dataset that will be filtered. Please note the column name is case sensitive.
+                            operator:
+                              type: string
+                              description: 'An operator describing the type of filter operation to be performed on the dataset. The operators that can be used are as follows: "IN", "NOT_IN", "EQUALS", "NOT_EQUALS", "GREATER_THAN", "GREAT_THAN_EQUALS_TO", "LESS_THAN", "LESS_THAN_EQUALS_TO".'
+                            values:
+                              type: array
+                              description: A list of values to be used in the filter. The values must be in quotes even if it is a numeric type and it must be in a list even if there is only one.
+                              items:
+                                type: string
+                          required:
+                            - column
+                            - operator
+                            - values
+                    required:
+                      - token
+                      - permissions
+              required:
+                - authorizations
+            examples:
+              Example 1:
+                value:
+                  sessionLength: 1440
+                  authorizations:
+                    - token: bc36f
+                      permissions:
+                        - READ
+                        - FILTER
+                        - EXPORT
+                      filters:
+                        - column: State
+                          operator: IN
+                          values:
+                            - California
+                            - New York
+                            - Ohio
+        description: |
+          ### Sample Filter Objects
+          Filter by column "Count" for values that are greater than the value 5.
+
+          ```json
+          [{"column": "Count", "operator": "GREATER_THAN", "values": ["4"]}]
+          ```
+
+          Filter by column "Date" for values between the following dates: "2020-01-15" and "2020-01-21".
+
+          ```json
+          [{"column":"Date","operand":"BETWEEN","values":["2020-01-15","2020-01-21"]}]
+          ```
+          Filter by column "State" for values that are one of the following: "California", "New York", or "Ohio".
+
+          ```json
+          [{"column":"State","operand":"IN","values":["California", "New York", "Ohio"]}]
+          ```
+components:
+  schemas: {}
+  securitySchemes:
+    API Key - 1:
+      type: http
+      scheme: bearer
+security:
+  - API Key - 1: []

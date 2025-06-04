@@ -1,0 +1,267 @@
+openapi: 3.1.0
+x-stoplight:
+  id: jaqelzzxpee3e
+info:
+  title: Simple API
+  version: '1.0'
+  description: The Simple API allows you to create new DataSets and import JSON data into them.
+servers:
+  - url: 'https://api.domo.com'
+    description: Domo API
+paths:
+  /v1/json:
+    parameters: []
+    post:
+      summary: Create DataSet
+      operationId: ''
+      description: 'Creates a new DataSet in your Domo instance. Once the DataSet has been created, data can then be imported into the DataSet.'
+      parameters:
+        - schema:
+            type: string
+          in: query
+          name: name
+          required: true
+          description: Name of the DataSet to create
+        - schema:
+            type: string
+          in: query
+          name: description
+          required: false
+          description: Description of DataSet to create
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+              x-examples:
+                Example 1:
+                  name: Leonhard Euler Party
+                  description: Mathematician Guest List
+            examples:
+              Example 1:
+                value:
+                  name: Leonhard Euler Party
+                  description: Mathematician Guest List
+        description: ''
+      responses:
+        '201':
+          description: 'Created — Body contains the details of the created DataSet'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: The DataSet id
+                  name:
+                    type: string
+                    description: The DataSet name
+                  description:
+                    type: string
+                    description: The description of the DataSet
+                  rows:
+                    type: integer
+                  columns:
+                    type: integer
+                  owner:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      name:
+                        type: string
+                  createdAt:
+                    type: string
+                  updatedAt:
+                    type: string
+                  pdpEnabled:
+                    type: boolean
+                    description: Personalized Data Permissions enabled
+                  policies:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        type:
+                          type: string
+                          example: open
+                        name:
+                          type: string
+                          example: All Rows
+                        filters:
+                          type: array
+                          items:
+                            type: object
+                        users:
+                          type: array
+                          items:
+                            type: object
+                        virtualUsers:
+                          type: array
+                          items:
+                            type: object
+                        groups:
+                          type: array
+                          items:
+                            type: object
+                x-examples:
+                  Example 1:
+                    id: 4405ff58-1957-45f0-82bd-914d989a3ea3
+                    name: Leonhard Euler Party
+                    description: Mathematician Guest List
+                    rows: 0
+                    columns: 0
+                    owner:
+                      id: 540824232
+                      name: John Smith
+                    createdAt: '2025-04-21T17:20:36Z'
+                    updatedAt: '2025-04-21T17:20:36Z'
+                    pdpEnabled: false
+                    policies: [{"id":622387,"type":"open","name":"All Rows","filters":[],"users":[],"virtualUsers":[],"groups":[]}]
+              examples:
+                Example 1:
+                  value:
+                    id: 4405ff58-1957-45f0-82bd-914d989a3ea3
+                    name: Leonhard Euler Party
+                    description: Mathematician Guest List
+                    rows: 0
+                    columns: 0
+                    owner:
+                      id: 540824232
+                      name: John Smith
+                    createdAt: '2025-04-21T17:20:36Z'
+                    updatedAt: '2025-04-21T17:20:36Z'
+                    pdpEnabled: false
+                    policies: [{"id":622387,"type":"open","name":"All Rows","filters":[],"users":[],"virtualUsers":[],"groups":[]}]
+  '/v1/json/{DATASET_ID}/data':
+    parameters:
+      - schema:
+          type: string
+        name: DATASET_ID
+        in: path
+        required: true
+        description: The ID of the DataSet to import the data into
+      - name: updateMethod
+        in: query
+        description: |
+          Specifies how the data import should update the DataSet. 
+          
+          Defaults to `REPLACE` if not specified. 
+          
+          If set to `APPEND`, the schema must match the existing schema.
+          
+          Case-sensitive; must be uppercase. Falls back to REPLACE if given an invalid value.
+        required: false
+        schema:
+          type: string
+          default: REPLACE
+          enum:
+            - REPLACE
+            - APPEND
+    put:
+      summary: Import data into DataSet
+      operationId: ''
+      description: Imports data into an already existing DataSet in your Domo instance.
+      requestBody:
+        description: |
+          An array of JSON objects which will be converted to CSV and stored as data. 
+          
+          If you want to pass CSV directly, use [the DataSet API](https://developer.domo.com/portal/3b1e3a7d5f420-data-set-api). 
+          
+          If **appending**, the **schema** must **match** the existing schema. To omit a field, specify the key but use an empty string or `null` for the value (see Example 2).
+          
+          If **replacing**, some objects **can be missing properties** that others have, resulting in empty fields (see Example 3).
+          
+          If your objects contain array values, they will appear as "List" in the DataSet. Consider converting them to properties or, alternatively, you can leverage one of Domo's many [JSON connectors](https://www.domo.com/appstore/apps?q=json) to more flexibly deal with arrays.
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                minItems: 1
+                additionalProperties: true
+            examples:
+              Example 1:
+                value:
+                  - Friend: John
+                    Attending: 'false'
+                  - Friend: Jane
+                    Attending: 'true'
+              Example 2:
+                value:
+                 - Name: Tomato
+                   Color: Red
+                   Favorite: false
+                   Eaten: 1
+                 - Name: Radish
+                   Color: ""
+                   Favorite: null
+                   Eaten: null
+                 - Name: Banana
+                   Color: Yellow
+                   Favorite: true
+                   Eaten: 4
+              Example 3:
+                value:
+                 - name: Leia Organa
+                   role: Rebel Leader
+                   quote: "Help me, Obi-Wan Kenobi. You're my only hope."
+                   side: light
+                 - name: Qui-Gon Jinn
+                 - name: Darth Vader
+                   role: Sith Lord
+                   quote: I find your lack of faith disturbing.
+                   side: dark
+      responses:
+        '204':
+          description: Success! Returns an empty response body.
+        '400':
+          description: Bad Request — Invalid input data or schema.
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: >-
+                  Invalid data provided during upload. Invalid schema. Expected: {columns=[{type='STRING', name='name', metadata=null}, {type='STRING', name='role', metadata=null}, {type='STRING', name='quote', metadata=null}, {type='STRING', name='side', metadata=null}]}
+        '401':
+          description: Unauthorized — Expired access token, etc.
+          headers:
+            WWW-Authenticate:
+              description: >-
+                Error codes and descriptions.
+              schema:
+                type: string
+                example: >-
+                  Bearer error="invalid_token", error_description="An error occurred while attempting to decode the Jwt: Jwt expired at 2025-04-25T04:28:44Z", error_uri="https://tools.ietf.org/html/rfc6750#section-3.1"
+        '403':
+          description: Forbidden — Invalid or missing access token.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 403
+                  toe:
+                    type: string
+                    description: Thread of Execution — a way Domo Support can track down a problem
+                    example: 694M4LH50R-CFNR0-N0VD2
+
+components:
+  schemas: {}
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+security:
+  - bearerAuth: []
