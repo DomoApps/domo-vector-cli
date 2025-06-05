@@ -25,10 +25,12 @@ async def handle_upload_cli(args):
     if args.dry_run:
         print(f"Dry run: {len(chunks)} chunks would be created.")
         for chunk in chunks:
-            print(f"Chunk: {chunk['text'][:50]}... (from {chunk['file_path']})")
+            print(
+                f"Chunk: {chunk['text'][:50]}... (from {chunk['file_path']})...(group: {args.group_id})"
+            )
     else:
         print(f"Uploading {len(chunks)} chunks to index {args.index_id}...")
-        await upload_chunks_to_vector_index(chunks, args.index_id)
+        await upload_chunks_to_vector_index(chunks, args.index_id, args.group_id)
         print("Upload complete.")
 
 
@@ -48,7 +50,6 @@ async def process_documents(
     if not dry_run:
         print(f"Creating vector index with ID: {index_id}")
         await create_vector_index(index_id)
-
     chunks = []
     for file_path in iterate_documents_breadth_first(root_dir):
         ext = os.path.splitext(file_path)[1].lower()
@@ -86,7 +87,7 @@ async def process_documents(
             text, max_length=max_length, overlap=overlap
         )
         for i, chunk in enumerate(chunk_list):
-            chunks.append({"text": chunk, "file_path": file_path, "chunk_index": i})
+            chunks.append({"text": chunk, "file_path": file_path})
     return chunks
 
 
@@ -130,7 +131,9 @@ def chunk_text_with_overlap(text: str, max_length: int, overlap: int) -> List[st
     return splitter.split_text(text)
 
 
-async def upload_chunks_to_vector_index(chunks: List[Dict], index_id: str):
+async def upload_chunks_to_vector_index(
+    chunks: List[Dict], index_id: str, group_id: str = None
+) -> dict:
     """
     Uploads a list of chunk dictionaries to the specified vector index via the Domo Recall API.
     Each chunk should contain the text and any relevant metadata.
@@ -139,26 +142,51 @@ async def upload_chunks_to_vector_index(chunks: List[Dict], index_id: str):
 
     from constants import ENDPOINTS
 
-    url = ENDPOINTS["upsert_index"].replace("{index_id}", index_id)
+    import logging
 
-    nodes = []
-    for chunk in chunks:
-        # Extract the file name from the file_path for groupId
-        file_name = os.path.basename(chunk["file_path"])
-        node = {
-            "id": str(uuid.uuid4()),
-            "content": chunk["text"],
-            "type": "TEXT",
-            "groupId": file_name,
-        }
-        nodes.append(node)
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger("upsert")
 
-    payload = {"nodes": nodes}
+    url = ENDPOINTS["upsert_nodes"].replace("{index_id}", index_id)
     headers = {"x-domo-developer-token": os.environ.get("DOMO_DEVELOPER_TOKEN", "")}
+    logger.info(f"developer token: {headers['x-domo-developer-token'][:4]}...")
+    batch_size = 50
+    total = len(chunks)
+    results = []
     async with httpx.AsyncClient() as client:
-        response = await client.post(url, json=payload, headers=headers)
-        response.raise_for_status()
-        return response.json()
+        for i in range(0, total, batch_size):
+            batch = chunks[i : i + batch_size]
+            nodes = []
+            for chunk in batch:
+                # Extract the file name from the file_path for groupId if one is not provided
+                node_group_id = (
+                    group_id if group_id else os.path.basename(chunk["file_path"])
+                )
+                node = {
+                    "id": str(uuid.uuid4()),
+                    "content": chunk["text"],
+                    "type": "TEXT",
+                    "groupId": node_group_id,
+                }
+                nodes.append(node)
+            payload = {"nodes": nodes}
+            try:
+                logger.info(
+                    f"Uploading batch {i//batch_size+1} ({len(nodes)} nodes) to index {index_id}..."
+                )
+                response = await client.post(
+                    url, json=payload, headers=headers, timeout=60
+                )
+                response.raise_for_status()
+                logger.info(f"Batch {i//batch_size+1} uploaded successfully.")
+                results.append(response.json())
+            except httpx.HTTPStatusError as e:
+                logger.error(
+                    f"HTTP error uploading batch {i//batch_size+1}: {e.response.status_code} - {e.response.text}"
+                )
+            except Exception as e:
+                logger.error(f"Unexpected error uploading batch {i//batch_size+1}: {e}")
+    return results
 
 
 def read_file_contents(file_path: str) -> str:

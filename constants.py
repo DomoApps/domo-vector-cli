@@ -36,6 +36,12 @@ COMMANDS = {
                 "default": DEFAULT_CHUNK_OVERLAP,
                 "help": "Number of overlapping characters between chunks.",
             },
+            {
+                "name": "--group-id",
+                "type": str,
+                "default": None,
+                "help": "Group ID for the nodes being uploaded.",
+            },
         ],
     },
     "delete_all": {
@@ -82,6 +88,7 @@ COMMANDS = {
 
 ENDPOINTS = {
     "get_index": f"{API_URL_BASE}/recall/v1/indexes/{{index_id}}/get",
-    "delete_index": f"/recall/v1/indexes/{{index_id}}/delete",
-    "create_index": f"/recall/v1/indexes",
+    "delete_index": f"{API_URL_BASE}/recall/v1/indexes/{{index_id}}/delete",
+    "create_index": f"{API_URL_BASE}/recall/v1/indexes",
+    "upsert_nodes": f"{API_URL_BASE}/recall/v1/indexes/{{index_id}}/upsert",
 }

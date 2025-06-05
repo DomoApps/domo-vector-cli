@@ -1,5 +1,5 @@
 import os
-from constants import API_URL_BASE
+from constants import API_URL_BASE, ENDPOINTS
 
 
 async def handle_get_cli(args):
@@ -20,7 +20,7 @@ async def get_all_node_ids(index_id: str) -> list:
     """
     import httpx
 
-    url = f"{API_URL_BASE}/recall/v1/indexes/{index_id}/get"
+    url = ENDPOINTS["get_index"].replace("{index_id}", index_id)
     headers = {"x-domo-developer-token": os.environ.get("DOMO_DEVELOPER_TOKEN", "")}
     async with httpx.AsyncClient() as client:
         response = await client.post(url, json={}, headers=headers)

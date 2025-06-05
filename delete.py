@@ -23,7 +23,7 @@ async def delete_all_nodes_without_group_id(index_id: str):
     """
     import httpx
 
-    url_get = ENDPOINTS["get_index"].replace("{{index_id}}", index_id)
+    url_get = ENDPOINTS["get_index"].replace("{index_id}", index_id)
     headers = {"x-domo-developer-token": os.environ.get("DOMO_DEVELOPER_TOKEN", "")}
     async with httpx.AsyncClient() as client:
         print(f"Fetching all nodes from index {index_id}...")
@@ -55,7 +55,7 @@ async def delete_nodes_by_id(index_id: str, node_ids: list):
     """
     import httpx
 
-    url = ENDPOINTS["delete_index"].replace("{{index_id}}", index_id)
+    url = ENDPOINTS["delete_index"].replace("{index_id}", index_id)
     headers = {"x-domo-developer-token": os.environ.get("DOMO_DEVELOPER_TOKEN", "")}
     payload = {"nodeIds": node_ids}
     async with httpx.AsyncClient() as client:
@@ -70,7 +70,7 @@ async def delete_nodes_by_group_id(index_id: str, group_ids: list):
     """
     import httpx
 
-    url = API_URL_BASE + ENDPOINTS["delete_index"].replace("{index_id}", index_id)
+    url = ENDPOINTS["delete_index"].replace("{index_id}", index_id)
     headers = {"x-domo-developer-token": os.environ.get("DOMO_DEVELOPER_TOKEN", "")}
     payload = {"nodeGroupIds": group_ids}
     async with httpx.AsyncClient() as client:

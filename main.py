@@ -44,7 +44,7 @@ async def cli_main():
     if args.command == "help" or args.command is None:
         help()
     if args.command == "upload-nodes":
-        handle_upload_cli(args)
+        await handle_upload_cli(args)
     elif args.command in ("delete-by-id", "delete-by-group", "delete-all"):
         await handle_delete_cli(args)
     elif args.command == "get-all":
