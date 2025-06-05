@@ -14,7 +14,7 @@ async def handle_upload_cli(args):
     chunk_size = args.chunk_size if args.chunk_size else DEFAULT_CHUNK_SIZE
     overlap = args.overlap if args.overlap else DEFAULT_CHUNK_OVERLAP
     # Process markdown documents and create chunks
-    chunks = await process_markdown_documents(
+    chunks = await process_documents(
         root_dir=args.root,
         index_id=args.index_id,
         max_length=chunk_size,
@@ -32,7 +32,7 @@ async def handle_upload_cli(args):
         print("Upload complete.")
 
 
-async def process_markdown_documents(
+async def process_documents(
     root_dir: str,
     index_id: str,
     max_length: int,
@@ -51,13 +51,42 @@ async def process_markdown_documents(
 
     chunks = []
     for file_path in iterate_documents_breadth_first(root_dir):
-        if file_path.endswith(".md"):
+        ext = os.path.splitext(file_path)[1].lower()
+        if ext == ".md":
             text = read_file_contents(file_path)
-            chunk_list = chunk_text_with_overlap(
-                text, max_length=max_length, overlap=overlap
-            )
-            for i, chunk in enumerate(chunk_list):
-                chunks.append({"text": chunk, "file_path": file_path, "chunk_index": i})
+            # Optionally, preprocess markdown (e.g., strip frontmatter)
+        elif ext == ".html":
+            text = read_file_contents(file_path)
+            # Optionally, extract visible text from HTML
+            try:
+                from bs4 import BeautifulSoup
+
+                soup = BeautifulSoup(text, "html.parser")
+                text = soup.get_text(separator="\n")
+            except ImportError:
+                print("BeautifulSoup4 is not installed. HTML files will not be parsed.")
+        elif ext == ".json":
+            import json
+
+            try:
+                with open(file_path, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                # Convert JSON to a string representation for chunking
+                import pprint
+
+                text = pprint.pformat(data)
+            except Exception as e:
+                print(f"Failed to parse JSON file {file_path}: {e}")
+                continue
+        else:
+            # Skip unsupported file types
+            continue
+
+        chunk_list = chunk_text_with_overlap(
+            text, max_length=max_length, overlap=overlap
+        )
+        for i, chunk in enumerate(chunk_list):
+            chunks.append({"text": chunk, "file_path": file_path, "chunk_index": i})
     return chunks
 
 
@@ -95,7 +124,7 @@ def chunk_text_with_overlap(text: str, max_length: int, overlap: int) -> List[st
     splitter = CharacterTextSplitter(
         separator="\n",
         chunk_size=max_length,
-        DEFAULT_CHUNK_OVERLAP=overlap,
+        chunk_overlap=overlap,
         length_function=len,
     )
     return splitter.split_text(text)
