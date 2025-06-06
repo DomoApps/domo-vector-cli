@@ -25,6 +25,11 @@ COMMANDS = {
                 "help": "If set, only print chunk info and do not upload.",
             },
             {
+                "name": "--no-create-index",
+                "action": "store_true",
+                "help": "If set, do not create the index, just upload nodes.",
+            },
+            {
                 "name": "--chunk-size",
                 "type": int,
                 "default": DEFAULT_CHUNK_SIZE,

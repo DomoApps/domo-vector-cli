@@ -20,6 +20,7 @@ async def handle_upload_cli(args):
         max_length=chunk_size,
         overlap=overlap,
         dry_run=args.dry_run,
+        no_create_index=args.no_create_index,
     )
 
     if args.dry_run:
@@ -40,6 +41,7 @@ async def process_documents(
     max_length: int,
     overlap: int,
     dry_run: bool = False,
+    no_create_index: bool = False,
 ) -> List[Dict]:
     """
     Creates the index, then iterates through all markdown files in the directory, reads their contents,
@@ -47,7 +49,7 @@ async def process_documents(
     Returns a list of dicts with chunk text and metadata.
     """
     # Create the index first
-    if not dry_run:
+    if not dry_run and not no_create_index:
         print(f"Creating vector index with ID: {index_id}")
         await create_vector_index(index_id)
     chunks = []
@@ -72,10 +74,8 @@ async def process_documents(
             try:
                 with open(file_path, "r", encoding="utf-8") as f:
                     data = json.load(f)
-                # Convert JSON to a string representation for chunking
-                import pprint
-
-                text = pprint.pformat(data)
+                # Dump JSON to a string for chunking
+                text = json.dumps(data, ensure_ascii=False, indent=2)
             except Exception as e:
                 print(f"Failed to parse JSON file {file_path}: {e}")
                 continue
@@ -153,39 +153,59 @@ async def upload_chunks_to_vector_index(
     batch_size = 50
     total = len(chunks)
     results = []
+    total_batches = (total + batch_size - 1) // batch_size
     async with httpx.AsyncClient() as client:
         for i in range(0, total, batch_size):
             batch = chunks[i : i + batch_size]
             nodes = []
             for chunk in batch:
-                # Extract the file name from the file_path for groupId if one is not provided
                 node_group_id = (
                     group_id if group_id else os.path.basename(chunk["file_path"])
                 )
+                content = chunk["text"]
+                # Defensive: ensure content is a string
+                if not isinstance(content, str):
+                    logger.warning(
+                        f"Node content for file {chunk.get('file_path', 'unknown')} is not a string (type={type(content)}). Attempting to convert."
+                    )
+                    if isinstance(content, dict):
+                        import json
+                        content = json.dumps(content, ensure_ascii=False)
+                    else:
+                        content = str(content)
                 node = {
                     "id": str(uuid.uuid4()),
-                    "content": chunk["text"],
+                    "content": content,
                     "type": "TEXT",
                     "groupId": node_group_id,
                 }
+                # Optional: validate node structure
+                if not all(k in node for k in ("id", "content", "type", "groupId")):
+                    logger.error(f"Node missing required keys: {node}")
+                    continue
                 nodes.append(node)
             payload = {"nodes": nodes}
+            # Log only the first node in the batch for debugging
+            if nodes:
+                logger.info(
+                    f"First node in batch {i//batch_size+1}/{total_batches}: (file: {batch[0].get('file_path', 'unknown')}) {nodes[0]}"
+                )
             try:
                 logger.info(
-                    f"Uploading batch {i//batch_size+1} ({len(nodes)} nodes) to index {index_id}..."
+                    f"Uploading batch {i//batch_size+1}/{total_batches} ({len(nodes)} nodes) to index {index_id}..."
                 )
                 response = await client.post(
                     url, json=payload, headers=headers, timeout=60
                 )
                 response.raise_for_status()
-                logger.info(f"Batch {i//batch_size+1} uploaded successfully.")
+                logger.info(f"Batch {i//batch_size+1}/{total_batches} uploaded successfully.")
                 results.append(response.json())
             except httpx.HTTPStatusError as e:
                 logger.error(
-                    f"HTTP error uploading batch {i//batch_size+1}: {e.response.status_code} - {e.response.text}"
+                    f"HTTP error uploading batch {i//batch_size+1}/{total_batches}: {e.response.status_code} - {e.response.text}"
                 )
             except Exception as e:
-                logger.error(f"Unexpected error uploading batch {i//batch_size+1}: {e}")
+                logger.error(f"Unexpected error uploading batch {i//batch_size+1}/{total_batches}: {e}")
     return results
 
 
