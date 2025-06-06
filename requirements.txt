@@ -1,3 +1,4 @@
 httpx
 langchain
 env
+pytest
