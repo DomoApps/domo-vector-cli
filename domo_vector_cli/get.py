@@ -1,5 +1,5 @@
 import os
-from constants import API_URL_BASE, ENDPOINTS
+from domo_vector_cli.constants import ENDPOINTS
 
 
 async def handle_get_cli(args):

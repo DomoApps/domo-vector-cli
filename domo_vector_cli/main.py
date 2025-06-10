@@ -1,27 +1,33 @@
 import os
 import argparse
 import asyncio
-from constants import DEFAULT_CHUNK_OVERLAP
-from delete import handle_delete_cli
-from get import handle_get_cli
-from upsert import handle_upload_cli
-from help import help
+from domo_vector_cli.delete import handle_delete_cli
+from domo_vector_cli.get import handle_get_cli
+from domo_vector_cli.upsert import handle_upload_cli
+from domo_vector_cli.help import help
+from domo_vector_cli.configure import handle_configure_cli
 from dotenv import load_dotenv
-from typing import List, Dict, Generator
 
 
 load_dotenv()
 
 
+def add_configure_command(subparsers):
+    parser_configure = subparsers.add_parser(
+        "configure", help="Configure your Domo URL and API key for the CLI"
+    )
+    parser_configure.set_defaults(func=handle_configure_cli)
+
+
 def parse_args():
     parser = argparse.ArgumentParser(
         description="Partner GPT Vector Index CLI",
-        usage="python main.py <command> [options]",
+        usage="domo-vector <command> [options]",
     )
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
     # Main (default) command for chunk/upload using COMMANDS
-    from constants import COMMANDS
+    from domo_vector_cli.constants import COMMANDS
 
     cmd = COMMANDS["upload_nodes"]
     parser_main = subparsers.add_parser(cmd["name"], help=cmd["help"])
@@ -36,13 +42,34 @@ def parse_args():
     # add get commands
     add_get_cli_commands(subparsers)
 
+    # Add configure command
+    add_configure_command(subparsers)
     return parser.parse_args()
+
+
+from domo_vector_cli.configure import handle_configure_cli
 
 
 async def cli_main():
     args = parse_args()
+    # Always allow configure and help
+    if args.command == "configure":
+        handle_configure_cli()
+        return
     if args.command == "help" or args.command is None:
         help()
+        return
+
+    # Check for required environment variables
+    token = os.environ.get("DOMO_DEVELOPER_TOKEN")
+    url_base = os.environ.get("DOMO_API_URL_BASE")
+    if not token or not url_base:
+        print(
+            "\nERROR: You must configure your DOMO_DEVELOPER_TOKEN and DOMO_API_URL_BASE before running this command."
+        )
+        print("Run: domo-vector configure\n")
+        return
+
     if args.command == "upload-nodes":
         await handle_upload_cli(args)
     elif args.command in ("delete-by-id", "delete-by-group", "delete-all"):
@@ -52,7 +79,7 @@ async def cli_main():
 
 
 def add_delete_cli_commands(subparsers):
-    from constants import COMMANDS
+    from domo_vector_cli.constants import COMMANDS
 
     for key in ["delete_all", "delete_by_id", "delete_by_group"]:
         cmd = COMMANDS[key]
@@ -72,7 +99,7 @@ def add_get_cli_commands(subparsers):
     parser_get_all.set_defaults(func=handle_get_cli)
 
 
-if __name__ == "__main__":
+def main():
     try:
         asyncio.run(cli_main())
     except KeyboardInterrupt:
@@ -82,3 +109,7 @@ if __name__ == "__main__":
 
         print("\nAn unexpected error occurred:", str(e))
         traceback.print_exc()
+
+
+if __name__ == "__main__":
+    main()

@@ -1,11 +1,12 @@
-import pytest
-from upsert import (
+import sys
+import os
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+from domo_vector_cli.upsert import (
     chunk_text_with_overlap,
     read_file_contents,
     iterate_documents_breadth_first,
 )
-import os
-import tempfile
 
 
 def test_chunk_text_with_overlap_basic():

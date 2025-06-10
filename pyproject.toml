@@ -1,0 +1,25 @@
+[tool.setuptools.packages.find]
+include = ["domo_vector*"]
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "domo-vector"
+version = "0.1"
+description = "A CLI for chunking, uploading, and managing documentation files in a Domo vector index."
+authors = [
+    { name = "Jon Tiritilli" }
+]
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "httpx",
+    "langchain",
+    "fitz",
+    "pytest",
+    "python-dotenv"
+]
+
+[project.scripts]
+domo-vector = "domo_vector_cli.main:main"

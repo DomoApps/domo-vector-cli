@@ -1,4 +1,8 @@
-API_URL_BASE = "https://domo-es.domo.com/api"
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+API_URL_BASE = os.environ.get("DOMO_API_URL_BASE", "https://domo-es.domo.com/api")
 DEFAULT_CHUNK_SIZE = 1500
 DEFAULT_CHUNK_OVERLAP = 200
 
@@ -88,6 +92,14 @@ COMMANDS = {
         "args": [
             {"name": "--index-id", "required": True, "help": "Index ID"},
         ],
+    },
+    "configure": {
+        "name": "configure",
+        "help": "Configure the CLI with environment variables",
+    },
+    "help": {
+        "name": "help",
+        "help": "Show this help message and exit",
     },
 }
 

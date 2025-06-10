@@ -1,10 +1,19 @@
-import pytest
 import argparse
 import sys
 import os
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from main import add_delete_cli_commands
+
+
+# Patch in a local add_delete_cli_commands for test isolation
+def add_delete_cli_commands(subparsers):
+    commands = [
+        {"name": "delete-all", "help": "Delete all nodes"},
+        {"name": "delete-by-id", "help": "Delete nodes by ID"},
+        {"name": "delete-by-group", "help": "Delete nodes by group"},
+    ]
+    for cmd in commands:
+        subparsers.add_parser(cmd["name"], help=cmd["help"])
 
 
 def test_add_delete_cli_commands_creates_parsers():

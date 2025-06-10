@@ -1,7 +1,11 @@
 import os
 from typing import Dict, Generator, List
 
-from constants import API_URL_BASE, DEFAULT_CHUNK_OVERLAP, DEFAULT_CHUNK_SIZE
+from domo_vector_cli.constants import (
+    API_URL_BASE,
+    DEFAULT_CHUNK_OVERLAP,
+    DEFAULT_CHUNK_SIZE,
+)
 
 
 async def handle_upload_cli(args):
@@ -102,7 +106,7 @@ async def create_vector_index(
     """
     import httpx
 
-    from constants import ENDPOINTS
+    from domo_vector_cli.constants import ENDPOINTS
 
     url = ENDPOINTS["create_index"]
     payload = {"embeddingModel": embedding_model, "indexId": index_id}
@@ -142,7 +146,7 @@ async def upload_chunks_to_vector_index(
     """
     import httpx, uuid, os
 
-    from constants import ENDPOINTS
+    from domo_vector_cli.constants import ENDPOINTS
 
     import logging
 

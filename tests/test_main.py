@@ -3,7 +3,7 @@ import argparse
 import sys
 from unittest.mock import patch, MagicMock
 
-import main
+from domo_vector_cli import constants, main
 
 
 def test_parse_args_upload_nodes_defaults(monkeypatch):
@@ -15,7 +15,7 @@ def test_parse_args_upload_nodes_defaults(monkeypatch):
     assert args.index_id == "partner-gpt-index"
     assert args.dry_run is False
     assert args.chunk_size == 1500
-    assert args.overlap == main.DEFAULT_CHUNK_OVERLAP
+    assert args.overlap == constants.DEFAULT_CHUNK_OVERLAP
 
 
 def test_parse_args_delete_by_id(monkeypatch):
