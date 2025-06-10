@@ -4,7 +4,7 @@ import asyncio
 from domo_vector_cli.delete import handle_delete_cli
 from domo_vector_cli.get import handle_get_cli
 from domo_vector_cli.upsert import handle_upload_cli
-from domo_vector_cli.help import help
+from domo_vector_cli.help import handle_help_cli
 from domo_vector_cli.configure import handle_configure_cli
 from dotenv import load_dotenv
 
@@ -44,6 +44,10 @@ def parse_args():
 
     # Add configure command
     add_configure_command(subparsers)
+
+    # Add help command
+    add_help_command(subparsers)
+
     return parser.parse_args()
 
 
@@ -53,11 +57,12 @@ from domo_vector_cli.configure import handle_configure_cli
 async def cli_main():
     args = parse_args()
     # Always allow configure and help
+
+    if args.command == "help" or args.command is None:
+        handle_help_cli()
+        return
     if args.command == "configure":
         handle_configure_cli()
-        return
-    if args.command == "help" or args.command is None:
-        help()
         return
 
     # Check for required environment variables
@@ -97,6 +102,11 @@ def add_get_cli_commands(subparsers):
     )
     parser_get_all.add_argument("--index-id", required=True, help="Index ID")
     parser_get_all.set_defaults(func=handle_get_cli)
+
+
+def add_help_command(subparsers):
+    parser_help = subparsers.add_parser("help", help="Show this help message and exit")
+    parser_help.set_defaults(func=handle_help_cli)
 
 
 def main():
