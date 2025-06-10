@@ -1,4 +1,4 @@
-# domo-vector
+# Domo Vector CLI Tool
 
 A Python CLI tool for chunking, uploading, and managing documentation files (Markdown, HTML, JSON, PDF) in a Domo vector index. Supports robust batching, error handling, and configuration via `.env`.
 
