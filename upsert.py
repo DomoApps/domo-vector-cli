@@ -58,6 +58,8 @@ async def process_documents(
         if ext == ".md":
             text = read_file_contents(file_path)
             # Optionally, preprocess markdown (e.g., strip frontmatter)
+        elif ext == ".txt":
+            text = read_file_contents(file_path)
         elif ext == ".html":
             text = read_file_contents(file_path)
             # Optionally, extract visible text from HTML
@@ -170,6 +172,7 @@ async def upload_chunks_to_vector_index(
                     )
                     if isinstance(content, dict):
                         import json
+
                         content = json.dumps(content, ensure_ascii=False)
                     else:
                         content = str(content)
@@ -198,14 +201,18 @@ async def upload_chunks_to_vector_index(
                     url, json=payload, headers=headers, timeout=60
                 )
                 response.raise_for_status()
-                logger.info(f"Batch {i//batch_size+1}/{total_batches} uploaded successfully.")
+                logger.info(
+                    f"Batch {i//batch_size+1}/{total_batches} uploaded successfully."
+                )
                 results.append(response.json())
             except httpx.HTTPStatusError as e:
                 logger.error(
                     f"HTTP error uploading batch {i//batch_size+1}/{total_batches}: {e.response.status_code} - {e.response.text}"
                 )
             except Exception as e:
-                logger.error(f"Unexpected error uploading batch {i//batch_size+1}/{total_batches}: {e}")
+                logger.error(
+                    f"Unexpected error uploading batch {i//batch_size+1}/{total_batches}: {e}"
+                )
     return results
 
 
