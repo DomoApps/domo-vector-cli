@@ -65,25 +65,25 @@ domo-vector upload-nodes --root ./documentation --index-id your-index-id
 
 ### Delete Nodes by ID
 
-```fish
+```bash
 domo-vector delete-by-id --index-id your-index-id --node-ids id1 id2 ...
 ```
 
 ### Delete Nodes by Group
 
-```fish
+```bash
 domo-vector delete-by-group --index-id your-index-id --group-ids group1 group2 ...
 ```
 
 ### Delete All Nodes (without group)
 
-```fish
+```bash
 domo-vector delete-all --index-id your-index-id
 ```
 
 ### Get All Node IDs
 
-```fish
+```bash
 domo-vector get-all --index-id your-index-id
 ```
 
@@ -92,9 +92,12 @@ domo-vector get-all --index-id your-index-id
 ## Supported File Types
 
 - Markdown (`.md`)
-- HTML (`.html`)
 - JSON (`.json`)
+
+Coming Soon
+
 - PDF (`.pdf`)
+- HTML (`.html`)
 
 ---
 
