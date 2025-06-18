@@ -145,8 +145,13 @@ COMMANDS = {
                         "help": "ID of the fileset",
                     },
                     {
+                        "name": "--file-path",
+                        "required": False,
+                        "help": "Path of the file to retrieve",
+                    },
+                    {
                         "name": "--file-id",
-                        "required": True,
+                        "required": False,
                         "help": "ID of the file to retrieve",
                     },
                 ],
@@ -173,4 +178,7 @@ ENDPOINTS = {
     "upsert_nodes": f"{API_URL_BASE}/recall/v1/indexes/{{index_id}}/upsert",
     "create_fileset": f"{API_URL_BASE}/files/v1/filesets/",
     "upload_file": f"{API_URL_BASE}/files/v1/filesets/{{fileset_id}}/files",
+    "get_file": f"{API_URL_BASE}/files/v1/filesets/{{fileset_id}}/path",
+    "get_file_by_id": f"{API_URL_BASE}/files/v1/filesets/{{fileset_id}}/files/{{file_id}}",
+    "get_file_by_id_download": f"{API_URL_BASE}/files/v1/filesets/{{fileset_id}}/files/{{file_id}}/download",
 }
