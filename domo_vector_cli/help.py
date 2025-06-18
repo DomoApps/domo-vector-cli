@@ -11,7 +11,7 @@ def handle_help_cli(*args, **kwargs):
     print("  get-all                Fetch all node IDs from the specified index")
     print("  configure              Configure the CLI with environment variables")
     print(
-        "  fileset                Manage filesets (create, upload-file, get-file, get-fileset, get-filesets)"
+        "  fileset                Manage filesets (create, upload-file, get-file, get-fileset, get-filesets, search-filesets)"
     )
     print("  help                   Show this help message and exit\n")
     print("Use 'domo-vector <command> --help' for more information on a command.")

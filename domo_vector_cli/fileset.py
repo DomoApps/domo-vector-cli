@@ -284,6 +284,48 @@ def get_file_text_from_fileset(fileset_id, file_path=None, file_id=None):
         return {"success": False, "error": "No file_path or file_id provided."}
 
 
+def search_filesets(
+    limit=10, offset=0, field_sort=None, filters=None, date_filters=None
+):
+    """
+    Search for filesets using POST /api/files/v1/filesets/search.
+    Returns the list of filesets matching the criteria.
+    """
+    import logging
+
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger(__name__)
+    import json
+
+    token = os.environ.get("DOMO_DEVELOPER_TOKEN")
+    if not token:
+        logger.error("DOMO_DEVELOPER_TOKEN environment variable not set.")
+        raise RuntimeError("DOMO_DEVELOPER_TOKEN environment variable not set.")
+    headers = {
+        "x-domo-developer-token": token,
+        "Content-Type": "application/json",
+    }
+    url = f"{ENDPOINTS['create_fileset']}search?limit={limit}&offset={offset}"
+    body = {
+        "fieldSort": (
+            field_sort
+            if field_sort is not None
+            else [{"field": "updated", "order": "DESC"}]
+        ),
+        "filters": filters if filters is not None else [],
+        "dateFilters": date_filters if date_filters is not None else [],
+    }
+    logger.info(f"Searching filesets with body: {json.dumps(body)}")
+    resp = requests.post(url, headers=headers, json=body)
+    if resp.status_code == 200:
+        filesets = resp.json()
+        logger.info(f"Found {len(filesets.get('filesets', []))} filesets.")
+        return {"success": True, "filesets": filesets.get("filesets", filesets)}
+    else:
+        logger.error(f"Failed to search filesets: {resp.status_code} {resp.text}")
+        return {"success": False, "status_code": resp.status_code, "error": resp.text}
+
+
 def handle_fileset_cli(args):
     if args.fileset_command == "create":
         result = create_fileset(name=args.name, description=args.description)
@@ -331,5 +373,18 @@ def handle_fileset_cli(args):
     elif args.fileset_command == "get-filesets":
         print("Listing all filesets...")
         # Implement list filesets logic here
+    elif args.fileset_command == "search-filesets":
+        # Handle search-filesets CLI command
+        limit = getattr(args, "limit", 10)
+        offset = getattr(args, "offset", 0)
+        result = search_filesets(limit=limit, offset=offset)
+        if result["success"]:
+            print(f"Found {len(result['filesets'])} filesets:")
+            for fs in result["filesets"]:
+                print(
+                    f"- {fs.get('name', fs.get('id', 'unknown'))} (ID: {fs.get('id')})"
+                )
+        else:
+            print(f"Error searching filesets: {result.get('error')}")
     else:
         print("Unknown fileset command.")

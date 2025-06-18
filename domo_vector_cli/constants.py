@@ -167,6 +167,23 @@ COMMANDS = {
                 ],
             },
             "get-filesets": {"help": "List all filesets", "args": []},
+            "search-filesets": {
+                "help": "List/search filesets (with optional sort, filters, pagination)",
+                "args": [
+                    {
+                        "name": "--limit",
+                        "type": int,
+                        "default": 10,
+                        "help": "Max filesets to return",
+                    },
+                    {
+                        "name": "--offset",
+                        "type": int,
+                        "default": 0,
+                        "help": "Offset for pagination",
+                    },
+                ],
+            },
         },
     },
 }
