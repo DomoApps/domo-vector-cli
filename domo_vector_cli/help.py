@@ -4,14 +4,20 @@ def handle_help_cli(*args, **kwargs):
     """
     print("\nUsage: domo-vector <command> [options]\n")
     print("Commands:")
-    print("  upload-nodes           Chunk and upload markdown files")
-    print("  delete-all             Delete all nodes in the index")
-    print("  delete-by-id           Delete nodes by nodeId")
-    print("  delete-by-group        Delete nodes by nodeGroupId (groupId)")
-    print("  get-all                Fetch all node IDs from the specified index")
-    print("  configure              Configure the CLI with environment variables")
+    print("  vector                 Manage vector index nodes (upload, delete, get)")
+    print("    upload               Chunk and upload files as nodes")
+    print("    delete-all           Delete all nodes in the index")
+    print("    delete-by-id         Delete nodes by nodeId")
+    print("    delete-by-group      Delete nodes by nodeGroupId (groupId)")
+    print("    get-all              Fetch all node IDs from the specified index\n")
+    print("  fileset                Manage filesets")
+    print("    create               Create a new fileset")
+    print("    upload-file          Upload a file or directory to a fileset")
+    print("    get-file             Get a file from a fileset")
+    print("    get-fileset          Get a fileset by ID")
+    print("    get-filesets         List all filesets")
     print(
-        "  fileset                Manage filesets (create, upload-file, get-file, get-fileset, get-filesets, search-filesets)"
+        "    search-filesets      List/search filesets (with optional sort, filters, pagination)\n"
     )
     print("  help                   Show this help message and exit\n")
     print("Use 'domo-vector <command> --help' for more information on a command.")
