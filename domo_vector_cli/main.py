@@ -48,6 +48,9 @@ def parse_args():
     # Add help command
     add_help_command(subparsers)
 
+    # Add fileset commands
+    add_fileset_cli_commands(subparsers)
+
     return parser.parse_args()
 
 
@@ -81,6 +84,10 @@ async def cli_main():
         await handle_delete_cli(args)
     elif args.command == "get-all":
         await handle_get_cli(args)
+    elif args.command == "fileset":
+        from domo_vector_cli.fileset import handle_fileset_cli
+
+        handle_fileset_cli(args)
 
 
 def add_delete_cli_commands(subparsers):
@@ -107,6 +114,26 @@ def add_get_cli_commands(subparsers):
 def add_help_command(subparsers):
     parser_help = subparsers.add_parser("help", help="Show this help message and exit")
     parser_help.set_defaults(func=handle_help_cli)
+
+
+def add_fileset_cli_commands(subparsers):
+    from domo_vector_cli.constants import COMMANDS
+
+    fileset_cmd = COMMANDS["fileset"]
+    parser_fileset = subparsers.add_parser(
+        fileset_cmd["name"], help=fileset_cmd["help"]
+    )
+    fileset_subparsers = parser_fileset.add_subparsers(
+        dest="fileset_command", help="Fileset subcommands"
+    )
+
+    for subcmd_name, subcmd in fileset_cmd["subcommands"].items():
+        parser_sub = fileset_subparsers.add_parser(subcmd_name, help=subcmd["help"])
+        for arg in subcmd["args"]:
+            kwargs = arg.copy()
+            name = kwargs.pop("name")
+            parser_sub.add_argument(name, **kwargs)
+    parser_fileset.set_defaults(func=None)
 
 
 def main():
