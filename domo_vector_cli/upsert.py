@@ -2,7 +2,6 @@ import os
 from typing import Dict, Generator, List
 
 from domo_vector_cli.constants import (
-    API_URL_BASE,
     DEFAULT_CHUNK_OVERLAP,
     DEFAULT_CHUNK_SIZE,
 )

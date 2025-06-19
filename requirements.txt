@@ -2,3 +2,4 @@ httpx
 langchain
 env
 pytest
+pytest-asyncio
