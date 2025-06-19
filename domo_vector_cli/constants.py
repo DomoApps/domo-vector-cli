@@ -5,7 +5,7 @@ load_dotenv()
 API_URL_BASE = os.environ.get("DOMO_API_URL_BASE")
 DEFAULT_CHUNK_SIZE = 1500
 DEFAULT_CHUNK_OVERLAP = 200
-DEFAULT_INDEX_ID = "developer_documentation"
+DEFAULT_INDEX_ID = os.environ.get("VECTOR_INDEX_ID", "developer_documentation")
 
 COMMANDS = {
     "configure": {
