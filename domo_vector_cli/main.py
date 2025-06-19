@@ -63,11 +63,11 @@ async def cli_main():
     elif args.command == "fileset":
         from domo_vector_cli.fileset import handle_fileset_cli
 
-        handle_fileset_cli(args)
+        await handle_fileset_cli(args)
     elif args.command == "vector":
         from domo_vector_cli.vector import handle_vector_cli
 
-        handle_vector_cli(args)
+        await handle_vector_cli(args)
 
 
 def add_help_command(subparsers):

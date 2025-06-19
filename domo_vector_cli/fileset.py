@@ -372,7 +372,15 @@ def handle_fileset_cli(args):
         # Implement get fileset logic here
     elif args.fileset_command == "get-filesets":
         print("Listing all filesets...")
-        # Implement list filesets logic here
+        result = search_filesets()
+        if result["success"]:
+            print(f"Found {len(result['filesets'])} filesets:")
+            for fs in result["filesets"]:
+                print(
+                    f"- {fs.get('name', fs.get('id', 'unknown'))} (ID: {fs.get('id')})"
+                )
+        else:
+            print(f"Error listing filesets: {result.get('error')}")
     elif args.fileset_command == "search-filesets":
         # Handle search-filesets CLI command
         limit = getattr(args, "limit", 10)

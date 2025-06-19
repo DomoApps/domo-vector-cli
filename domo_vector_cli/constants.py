@@ -2,9 +2,10 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv()
-API_URL_BASE = os.environ.get("DOMO_API_URL_BASE", "https://domo-es.domo.com/api")
+API_URL_BASE = os.environ.get("DOMO_API_URL_BASE")
 DEFAULT_CHUNK_SIZE = 1500
 DEFAULT_CHUNK_OVERLAP = 200
+DEFAULT_INDEX_ID = "developer_documentation"
 
 COMMANDS = {
     "configure": {
@@ -116,7 +117,7 @@ COMMANDS = {
                     {
                         "name": "--index-id",
                         "type": str,
-                        "default": "partner-gpt-index",
+                        "default": DEFAULT_INDEX_ID,
                         "help": "ID for the vector index to create/use.",
                     },
                     {
