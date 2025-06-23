@@ -3,15 +3,15 @@ from domo_vector_cli.constants import ENDPOINTS
 
 
 async def handle_delete_cli(args):
-    if args.command == "delete-all":
+    if args.vector_command == "delete-all":
         print(f"Deleting all nodes without group ids from index {args.index_id}")
         await delete_all_nodes_without_group_id(args.index_id)
         return
-    if args.command == "delete-by-id":
+    if args.vector_command == "delete-by-id":
         print(f"Deleting nodes by nodeId: {args.node_ids} from index {args.index_id}")
         result = await delete_nodes_by_id(args.index_id, args.node_ids)
         print(result)
-    elif args.command == "delete-by-group":
+    elif args.vector_command == "delete-by-group":
         print(f"Deleting nodes by groupId: {args.group_ids} from index {args.index_id}")
         result = await delete_nodes_by_group_id(args.index_id, args.group_ids)
         print(result)

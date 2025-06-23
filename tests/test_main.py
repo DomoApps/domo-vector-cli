@@ -10,7 +10,7 @@ def test_parse_args_upload_nodes_defaults(monkeypatch):
     test_args = ["main.py", "vector", "upload"]
     monkeypatch.setattr(sys, "argv", test_args)
     args = main.parse_args()
-    assert args.command == "vector"
+    assert args.vector_command == "vector"
     assert args.vector_command == "upload"
     assert args.root == "./documentation"
     assert args.index_id == "partner-gpt-index"
@@ -32,7 +32,7 @@ def test_parse_args_delete_by_id(monkeypatch):
     ]
     monkeypatch.setattr(sys, "argv", test_args)
     args = main.parse_args()
-    assert args.command == "vector"
+    assert args.vector_command == "vector"
     assert args.vector_command == "delete-by-id"
     assert args.index_id == "foo"
     assert args.node_ids == ["id1", "id2"]

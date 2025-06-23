@@ -6,12 +6,9 @@ async def handle_get_cli(args):
     """
     Handles the 'get' command for the CLI, fetching all node IDs from the specified index.
     """
-    if args.command == "get-all":
-        print(f"Fetching all node IDs from index {args.index_id}...")
-        node_ids = await get_all_node_ids(args.index_id)
-        print(f"Node IDs in index {args.index_id}: {node_ids}")
-    else:
-        print("Unknown command. Use 'get-all' to fetch all node IDs.")
+    print(f"Fetching all node IDs from index {args.index_id}...")
+    node_ids = await get_all_node_ids(args.index_id)
+    print(f"Node IDs in index {args.index_id}: {node_ids}")
 
 
 async def get_all_node_ids(index_id: str) -> list:
