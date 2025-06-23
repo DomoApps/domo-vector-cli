@@ -11,7 +11,7 @@ def test_parse_args_upload_nodes_defaults(monkeypatch):
     test_args = ["main.py", "vector", "upload"]
     monkeypatch.setattr(sys, "argv", test_args)
     args = main.parse_args()
-    assert args.vector_command == "vector"
+    assert args.command == "vector"
     assert args.vector_command == "upload"
     assert args.root == "./documentation"
     # index_id default comes from environment variable, so it could be None
@@ -47,7 +47,7 @@ def test_parse_args_delete_by_id(monkeypatch):
     ]
     monkeypatch.setattr(sys, "argv", test_args)
     args = main.parse_args()
-    assert args.vector_command == "vector"
+    assert args.command == "vector"
     assert args.vector_command == "delete-by-id"
     assert args.index_id == "foo"
     assert args.node_ids == ["id1", "id2"]
@@ -125,7 +125,6 @@ def test_get_file_text_from_fileset(monkeypatch):
 
 def test_parse_args_upload_nodes_with_global_flag(monkeypatch):
     """Test that the --global flag is parsed correctly."""
-    monkeypatch.setenv("VECTOR_INDEX_ID", "test-index")
     test_args = [
         "main.py",
         "vector",

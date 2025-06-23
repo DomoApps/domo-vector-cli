@@ -187,20 +187,20 @@ async def test_handle_delete_cli(monkeypatch, capsys):
 
     # delete-all
     args = Args()
-    args.command = "delete-all"
+    args.vector_command = "delete-all"
     args.index_id = "idx"
     await delete.handle_delete_cli(args)
     assert called["all"] == "idx"
     # delete-by-id
     args = Args()
-    args.command = "delete-by-id"
+    args.vector_command = "delete-by-id"
     args.index_id = "idx"
     args.node_ids = ["n1"]
     await delete.handle_delete_cli(args)
     assert called["by_id"] == ("idx", ["n1"])
     # delete-by-group
     args = Args()
-    args.command = "delete-by-group"
+    args.vector_command = "delete-by-group"
     args.index_id = "idx"
     args.group_ids = ["g1"]
     await delete.handle_delete_cli(args)
