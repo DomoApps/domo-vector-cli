@@ -4,6 +4,8 @@ from typing import Dict, Generator, List
 from domo_vector_cli.constants import (
     DEFAULT_CHUNK_OVERLAP,
     DEFAULT_CHUNK_SIZE,
+    VectorOperation,
+    get_endpoint_key,
 )
 
 
@@ -24,17 +26,25 @@ async def handle_upload_cli(args):
         overlap=overlap,
         dry_run=args.dry_run,
         no_create_index=args.no_create_index,
+        is_global=getattr(args, "global", False),
     )
 
     if args.dry_run:
-        print(f"Dry run: {len(chunks)} chunks would be created.")
+        index_type = (
+            "global" if getattr(args, "global", False) else "environment-specific"
+        )
+        print(
+            f"Dry run: {len(chunks)} chunks would be created and uploaded to {index_type} index."
+        )
         for chunk in chunks:
             print(
                 f"Chunk: {chunk['text'][:50]}... (from {chunk['file_path']})...(group: {args.group_id})"
             )
     else:
         print(f"Uploading {len(chunks)} chunks to index {args.index_id}...")
-        await upload_chunks_to_vector_index(chunks, args.index_id, args.group_id)
+        await upload_chunks_to_vector_index(
+            chunks, args.index_id, args.group_id, getattr(args, "global", False)
+        )
         print("Upload complete.")
 
 
@@ -45,6 +55,7 @@ async def process_documents(
     overlap: int,
     dry_run: bool = False,
     no_create_index: bool = False,
+    is_global: bool = False,
 ) -> List[Dict]:
     """
     Creates the index, then iterates through all markdown files in the directory, reads their contents,
@@ -53,8 +64,9 @@ async def process_documents(
     """
     # Create the index first
     if not dry_run and not no_create_index:
-        print(f"Creating vector index with ID: {index_id}")
-        await create_vector_index(index_id)
+        index_type = "global" if is_global else "environment-specific"
+        print(f"Creating {index_type} vector index with ID: {index_id}")
+        await create_vector_index(index_id, is_global=is_global)
     chunks = []
     for file_path in iterate_documents_breadth_first(root_dir):
         ext = os.path.splitext(file_path)[1].lower()
@@ -97,17 +109,24 @@ async def process_documents(
 
 
 async def create_vector_index(
-    index_id: str, embedding_model: str = "domo.openai"
+    index_id: str, embedding_model: str = "domo.openai", is_global: bool = False
 ) -> dict:
     """
     Creates a remote vector index via the Domo Recall API.
+
+    Args:
+        index_id: The ID for the vector index
+        embedding_model: The embedding model to use (default: "domo.openai")
+        is_global: If True, creates a global index; otherwise creates an environment-specific index
+
     Returns the index info as a dict.
     """
     import httpx
 
     from domo_vector_cli.constants import ENDPOINTS
 
-    url = ENDPOINTS["create_index"]
+    endpoint_key = get_endpoint_key(VectorOperation.CREATE_INDEX, is_global)
+    url = ENDPOINTS[endpoint_key]
     payload = {"embeddingModel": embedding_model, "indexId": index_id}
     headers = {"x-domo-developer-token": os.environ.get("DOMO_DEVELOPER_TOKEN", "")}
     async with httpx.AsyncClient() as client:
@@ -137,10 +156,17 @@ def chunk_text_with_overlap(text: str, max_length: int, overlap: int) -> List[st
 
 
 async def upload_chunks_to_vector_index(
-    chunks: List[Dict], index_id: str, group_id: str = None
+    chunks: List[Dict], index_id: str, group_id: str = None, is_global: bool = False
 ) -> dict:
     """
     Uploads a list of chunk dictionaries to the specified vector index via the Domo Recall API.
+
+    Args:
+        chunks: List of chunk dictionaries containing text and metadata
+        index_id: The ID of the vector index to upload to
+        group_id: Optional group ID for the chunks
+        is_global: If True, uses global index endpoints; otherwise uses environment-specific endpoints
+
     Each chunk should contain the text and any relevant metadata.
     """
     import httpx, uuid, os
@@ -152,8 +178,12 @@ async def upload_chunks_to_vector_index(
     logging.basicConfig(level=logging.INFO)
     logger = logging.getLogger("upsert")
 
-    url = ENDPOINTS["upsert_nodes"].replace("{index_id}", index_id)
+    endpoint_key = get_endpoint_key(VectorOperation.UPSERT_NODES, is_global)
+    url = ENDPOINTS[endpoint_key].replace("{index_id}", index_id)
     headers = {"x-domo-developer-token": os.environ.get("DOMO_DEVELOPER_TOKEN", "")}
+
+    index_type = "global" if is_global else "environment-specific"
+    logger.info(f"Using {index_type} vector index endpoints")
     logger.info(f"developer token: {headers['x-domo-developer-token'][:4]}...")
     batch_size = 50
     total = len(chunks)
