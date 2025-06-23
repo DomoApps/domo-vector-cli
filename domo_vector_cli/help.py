@@ -6,6 +6,7 @@ def handle_help_cli(*args, **kwargs):
     print("Commands:")
     print("  vector                 Manage vector index nodes (upload, delete, get)")
     print("    upload               Chunk and upload files as nodes")
+    print("                         Use --global flag to upload to global indexes")
     print("    delete-all           Delete all nodes in the index")
     print("    delete-by-id         Delete nodes by nodeId")
     print("    delete-by-group      Delete nodes by nodeGroupId (groupId)")

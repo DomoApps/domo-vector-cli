@@ -1,11 +1,27 @@
 import os
+from enum import Enum
+from typing import Dict, Tuple
 from dotenv import load_dotenv
+
+
+# Enums for type-safe endpoint mapping
+class IndexType(Enum):
+    ENVIRONMENT = "environment"
+    GLOBAL = "global"
+
+
+class VectorOperation(Enum):
+    CREATE_INDEX = "create_index"
+    UPSERT_NODES = "upsert_nodes"
+    GET_INDEX = "get_index"
+    DELETE_INDEX = "delete_index"
+
 
 load_dotenv()
 API_URL_BASE = os.environ.get("DOMO_API_URL_BASE")
 DEFAULT_CHUNK_SIZE = 1500
 DEFAULT_CHUNK_OVERLAP = 200
-DEFAULT_INDEX_ID = "developer_documentation"
+DEFAULT_INDEX_ID = os.environ.get("VECTOR_INDEX_ID")
 
 COMMANDS = {
     "configure": {
@@ -148,6 +164,11 @@ COMMANDS = {
                         "default": None,
                         "help": "Group ID for the nodes being uploaded.",
                     },
+                    {
+                        "name": "--global",
+                        "action": "store_true",
+                        "help": "Use global vector index endpoints instead of environment-specific ones.",
+                    },
                 ],
             },
             "delete-all": {
@@ -195,9 +216,50 @@ ENDPOINTS = {
     "delete_index": f"{API_URL_BASE}/recall/v1/indexes/{{index_id}}/delete",
     "create_index": f"{API_URL_BASE}/recall/v1/indexes",
     "upsert_nodes": f"{API_URL_BASE}/recall/v1/indexes/{{index_id}}/upsert",
+    "create_index_global": f"{API_URL_BASE}/recall/v1/global/indexes",
+    "upsert_nodes_global": f"{API_URL_BASE}/recall/v1/global/indexes/{{index_id}}/upsert",
     "create_fileset": f"{API_URL_BASE}/files/v1/filesets/",
     "upload_file": f"{API_URL_BASE}/files/v1/filesets/{{fileset_id}}/files",
     "get_file": f"{API_URL_BASE}/files/v1/filesets/{{fileset_id}}/path",
     "get_file_by_id": f"{API_URL_BASE}/files/v1/filesets/{{fileset_id}}/files/{{file_id}}",
     "get_file_by_id_download": f"{API_URL_BASE}/files/v1/filesets/{{fileset_id}}/files/{{file_id}}/download",
 }
+
+# Type-safe endpoint mapping
+ENDPOINT_MAPPING: Dict[Tuple[IndexType, VectorOperation], str] = {
+    (IndexType.ENVIRONMENT, VectorOperation.CREATE_INDEX): "create_index",
+    (IndexType.GLOBAL, VectorOperation.CREATE_INDEX): "create_index_global",
+    (IndexType.ENVIRONMENT, VectorOperation.UPSERT_NODES): "upsert_nodes",
+    (IndexType.GLOBAL, VectorOperation.UPSERT_NODES): "upsert_nodes_global",
+    (IndexType.ENVIRONMENT, VectorOperation.GET_INDEX): "get_index",
+    (IndexType.ENVIRONMENT, VectorOperation.DELETE_INDEX): "delete_index",
+}
+
+
+def get_endpoint_key(operation: VectorOperation, is_global: bool = False) -> str:
+    """
+    Get the appropriate endpoint key for a vector operation.
+
+    Args:
+        operation: The vector operation to perform
+        is_global: Whether to use global or environment-specific endpoints
+
+    Returns:
+        The endpoint key for use with ENDPOINTS dict
+
+    Raises:
+        KeyError: If the operation/index type combination is not supported
+    """
+    index_type = IndexType.GLOBAL if is_global else IndexType.ENVIRONMENT
+    endpoint_key = ENDPOINT_MAPPING.get((index_type, operation))
+
+    if endpoint_key is None:
+        supported_ops = [
+            op.value for op in VectorOperation if (index_type, op) in ENDPOINT_MAPPING
+        ]
+        raise KeyError(
+            f"Unsupported operation '{operation.value}' for {index_type.value} index. "
+            f"Supported operations: {supported_ops}"
+        )
+
+    return endpoint_key

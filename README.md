@@ -73,14 +73,28 @@ domo-vector help
 
 ### Vector Index Commands
 
+**Index Types:**
+
+- **Environment-specific indexes** (default): Indexes that are scoped to your current Domo environment
+- **Global indexes**: Indexes that are accessible across different Domo environments
+
 #### Upload Nodes (Chunk and Upload Files)
+
+**Environment-specific index (default):**
 
 ```bash
 domo-vector vector upload --root ./documentation --index-id your-index-id
 ```
 
+**Global index:**
+
+```bash
+domo-vector vector upload --root ./documentation --index-id your-index-id --global
+```
+
 - `--root`: Root directory containing documentation files (default: `./documentation`)
 - `--index-id`: ID for the vector index to create/use
+- `--global`: Use global vector index endpoints instead of environment-specific ones
 - Additional options: `--dry-run`, `--no-create-index`, `--chunk-size`, `--overlap`, `--group-id`
 
 #### Delete Nodes by ID
