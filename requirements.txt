@@ -3,3 +3,4 @@ langchain
 env
 pytest
 pytest-asyncio
+bs4
