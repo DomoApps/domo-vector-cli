@@ -2,7 +2,9 @@ documentation/
 manifest_examples/
 pdfs/
 txt/
+json/
 *.log
+jupyter/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

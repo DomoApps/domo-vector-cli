@@ -1,6 +1,7 @@
 httpx
-langchain
-env
+langchain-text-splitters
+pymupdf
+beautifulsoup4
+python-dotenv
 pytest
 pytest-asyncio
-bs4

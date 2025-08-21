@@ -1,6 +1,8 @@
 import argparse
 import sys
 import os
+import pytest
+from unittest import mock
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
@@ -31,6 +33,7 @@ from domo_vector_cli import delete
 
 
 @pytest.mark.asyncio
+@mock.patch.dict(os.environ, {"DOMO_DEVELOPER_TOKEN": "test_token", "DOMO_API_URL_BASE": "https://test.domo.com/api"})
 async def test_delete_nodes_by_id(monkeypatch):
     # Arrange
     called = {}
@@ -70,6 +73,7 @@ async def test_delete_nodes_by_id(monkeypatch):
 
 
 @pytest.mark.asyncio
+@mock.patch.dict(os.environ, {"DOMO_DEVELOPER_TOKEN": "test_token", "DOMO_API_URL_BASE": "https://test.domo.com/api"})
 async def test_delete_nodes_by_group_id(monkeypatch):
     called = {}
 
@@ -106,6 +110,7 @@ async def test_delete_nodes_by_group_id(monkeypatch):
 
 
 @pytest.mark.asyncio
+@mock.patch.dict(os.environ, {"DOMO_DEVELOPER_TOKEN": "test_token", "DOMO_API_URL_BASE": "https://test.domo.com/api"})
 async def test_delete_all_nodes_without_group_id(monkeypatch):
     called = {"get": {}, "delete": {}}
 
@@ -163,6 +168,7 @@ async def test_delete_all_nodes_without_group_id(monkeypatch):
 
 
 @pytest.mark.asyncio
+@mock.patch.dict(os.environ, {"DOMO_DEVELOPER_TOKEN": "test_token", "DOMO_API_URL_BASE": "https://test.domo.com/api"})
 async def test_handle_delete_cli(monkeypatch, capsys):
     # delete-all
     called = {"all": False, "by_id": False, "by_group": False}

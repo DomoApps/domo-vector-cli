@@ -1,0 +1,9 @@
+# Development dependencies
+-r requirements.txt
+pytest>=7.0.0
+pytest-asyncio>=0.21.0
+langchain-text-splitters
+httpx
+pymupdf
+beautifulsoup4
+python-dotenv

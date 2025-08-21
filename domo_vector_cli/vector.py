@@ -10,7 +10,7 @@ async def handle_vector_cli(args):
     # Nested nodes subcommands
     if not hasattr(args, "vector_command") or args.vector_command is None:
         print(
-            "Please specify a nodes subcommand. Use 'domo-vector nodes --help' for options."
+            "Please specify a vector subcommand. Use 'domo-vector vector --help' for options."
         )
         return
     if args.vector_command == "upload":

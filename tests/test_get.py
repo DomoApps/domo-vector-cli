@@ -8,6 +8,7 @@ from domo_vector_cli.main import add_vector_cli_commands
 from domo_vector_cli import get
 import pytest
 import asyncio
+from unittest import mock
 
 
 def test_add_get_cli_commands_creates_parser():
@@ -26,6 +27,7 @@ def test_add_get_cli_commands_creates_parser():
 
 
 @pytest.mark.asyncio
+@mock.patch.dict(os.environ, {"DOMO_DEVELOPER_TOKEN": "test_token", "DOMO_API_URL_BASE": "https://test.domo.com/api"})
 async def test_get_all_node_ids(monkeypatch):
     # Arrange
     async def mock_post(url, json, headers):

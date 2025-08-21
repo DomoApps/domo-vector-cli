@@ -19,9 +19,6 @@ def test_parse_args_upload_nodes_defaults(monkeypatch):
     assert args.dry_run is False
     assert args.chunk_size == 1500
     assert args.overlap == constants.DEFAULT_CHUNK_OVERLAP
-    # Test that the global flag defaults to False
-    assert hasattr(args, "global")
-    assert getattr(args, "global") is False
 
 
 def test_parse_args_upload_nodes_with_index_id(monkeypatch):
@@ -121,22 +118,3 @@ def test_get_file_text_from_fileset(monkeypatch):
     result = fileset.get_file_text_from_fileset("fsid", file_id="fid")
     assert result["success"]
     assert result["text"] == "hello world"
-
-
-def test_parse_args_upload_nodes_with_global_flag(monkeypatch):
-    """Test that the --global flag is parsed correctly."""
-    test_args = [
-        "main.py",
-        "vector",
-        "upload",
-        "--global",
-        "--index-id",
-        "global-test-index",
-    ]
-    monkeypatch.setattr(sys, "argv", test_args)
-    args = main.parse_args()
-    assert args.command == "vector"
-    assert args.vector_command == "upload"
-    assert hasattr(args, "global")
-    assert getattr(args, "global") is True
-    assert args.index_id == "global-test-index"

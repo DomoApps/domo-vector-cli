@@ -1,5 +1,5 @@
-import os
-from domo_vector_cli.constants import ENDPOINTS
+from domo_vector_cli.constants import get_endpoints
+from domo_vector_cli.config import config
 
 
 async def handle_delete_cli(args):
@@ -23,8 +23,9 @@ async def delete_all_nodes_without_group_id(index_id: str):
     """
     import httpx
 
-    url_get = ENDPOINTS["get_index"].replace("{index_id}", index_id)
-    headers = {"x-domo-developer-token": os.environ.get("DOMO_DEVELOPER_TOKEN", "")}
+    endpoints = get_endpoints()
+    url_get = endpoints["get_index"].replace("{index_id}", index_id)
+    headers = config.get_headers()
     async with httpx.AsyncClient() as client:
         print(f"Fetching all nodes from index {index_id}...")
         response = await client.post(url_get, json={}, headers=headers, timeout=60)
@@ -39,7 +40,7 @@ async def delete_all_nodes_without_group_id(index_id: str):
             print(f"No nodes found in index {index_id} without groupId.")
             return
         print(f"Deleting {len(node_ids)} nodes from index {index_id}...")
-        url_delete = ENDPOINTS["delete_index"].replace("{index_id}", index_id)
+        url_delete = endpoints["delete_index"].replace("{index_id}", index_id)
         payload = {"filter": {"nodeIds": node_ids}}
         del_response = await client.post(
             url_delete, json=payload, headers=headers, timeout=60
@@ -55,8 +56,9 @@ async def delete_nodes_by_id(index_id: str, node_ids: list):
     """
     import httpx
 
-    url = ENDPOINTS["delete_index"].replace("{index_id}", index_id)
-    headers = {"x-domo-developer-token": os.environ.get("DOMO_DEVELOPER_TOKEN", "")}
+    endpoints = get_endpoints()
+    url = endpoints["delete_index"].replace("{index_id}", index_id)
+    headers = config.get_headers()
     payload = {"nodeIds": node_ids}
     async with httpx.AsyncClient() as client:
         response = await client.post(url, json=payload, headers=headers)
@@ -70,8 +72,9 @@ async def delete_nodes_by_group_id(index_id: str, group_ids: list):
     """
     import httpx
 
-    url = ENDPOINTS["delete_index"].replace("{index_id}", index_id)
-    headers = {"x-domo-developer-token": os.environ.get("DOMO_DEVELOPER_TOKEN", "")}
+    endpoints = get_endpoints()
+    url = endpoints["delete_index"].replace("{index_id}", index_id)
+    headers = config.get_headers()
     payload = {"nodeGroupIds": group_ids}
     async with httpx.AsyncClient() as client:
         response = await client.post(url, json=payload, headers=headers)
