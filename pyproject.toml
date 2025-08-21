@@ -15,11 +15,25 @@ readme = "README.md"
 requires-python = ">=3.8"
 dependencies = [
     "httpx",
-    "langchain",
-    "fitz",
-    "pytest",
+    "langchain-text-splitters",
+    "pymupdf",
+    "beautifulsoup4",
     "python-dotenv"
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest",
+    "pytest-asyncio"
 ]
 
 [project.scripts]
 domo-vector = "domo_vector_cli.main:main"
+
+[tool.pytest.ini_options]
+addopts = "-v --tb=short"
+testpaths = ["tests"]
+asyncio_mode = "auto"
+markers = [
+    "asyncio: marks tests as async",
+]

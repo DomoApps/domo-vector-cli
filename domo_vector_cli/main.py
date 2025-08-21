@@ -37,9 +37,6 @@ def parse_args():
     return parser.parse_args()
 
 
-from domo_vector_cli.configure import handle_configure_cli
-
-
 async def cli_main():
     args = parse_args()
     # Always allow configure and help
@@ -51,10 +48,9 @@ async def cli_main():
         handle_configure_cli()
         return
 
-    # Check for required environment variables
-    token = os.environ.get("DOMO_DEVELOPER_TOKEN")
-    url_base = os.environ.get("DOMO_API_URL_BASE")
-    if not token or not url_base:
+    # Check for required configuration
+    from domo_vector_cli.config import config
+    if not config.validate_required_config():
         print(
             "\nERROR: You must configure your DOMO_DEVELOPER_TOKEN and DOMO_API_URL_BASE before running this command."
         )

@@ -1,13 +1,11 @@
 import os
 from enum import Enum
 from typing import Dict, Tuple
-from dotenv import load_dotenv
 
 
 # Enums for type-safe endpoint mapping
 class IndexType(Enum):
     ENVIRONMENT = "environment"
-    GLOBAL = "global"
 
 
 class VectorOperation(Enum):
@@ -17,11 +15,16 @@ class VectorOperation(Enum):
     DELETE_INDEX = "delete_index"
 
 
-load_dotenv()
-API_URL_BASE = os.environ.get("DOMO_API_URL_BASE")
+# These are imported from config now, but kept here for backward compatibility
 DEFAULT_CHUNK_SIZE = 1500
 DEFAULT_CHUNK_OVERLAP = 200
 DEFAULT_INDEX_ID = os.environ.get("VECTOR_INDEX_ID")
+
+# Dynamic API URL base - will be loaded from config when accessed
+def get_api_url_base() -> str:
+    """Get API URL base from configuration."""
+    from domo_vector_cli.config import config
+    return config.domo.api_url_base
 
 COMMANDS = {
     "configure": {
@@ -164,11 +167,6 @@ COMMANDS = {
                         "default": None,
                         "help": "Group ID for the nodes being uploaded.",
                     },
-                    {
-                        "name": "--global",
-                        "action": "store_true",
-                        "help": "Use global vector index endpoints instead of environment-specific ones.",
-                    },
                 ],
             },
             "delete-all": {
@@ -211,38 +209,39 @@ COMMANDS = {
     },
 }
 
-ENDPOINTS = {
-    "get_index": f"{API_URL_BASE}/recall/v1/indexes/{{index_id}}/get",
-    "delete_index": f"{API_URL_BASE}/recall/v1/indexes/{{index_id}}/delete",
-    "create_index": f"{API_URL_BASE}/recall/v1/indexes",
-    "upsert_nodes": f"{API_URL_BASE}/recall/v1/indexes/{{index_id}}/upsert",
-    "create_index_global": f"{API_URL_BASE}/recall/v1/global/indexes",
-    "upsert_nodes_global": f"{API_URL_BASE}/recall/v1/global/indexes/{{index_id}}/upsert",
-    "create_fileset": f"{API_URL_BASE}/files/v1/filesets/",
-    "upload_file": f"{API_URL_BASE}/files/v1/filesets/{{fileset_id}}/files",
-    "get_file": f"{API_URL_BASE}/files/v1/filesets/{{fileset_id}}/path",
-    "get_file_by_id": f"{API_URL_BASE}/files/v1/filesets/{{fileset_id}}/files/{{file_id}}",
-    "get_file_by_id_download": f"{API_URL_BASE}/files/v1/filesets/{{fileset_id}}/files/{{file_id}}/download",
-}
+def get_endpoints() -> Dict[str, str]:
+    """Get API endpoints with dynamic base URL."""
+    api_base = get_api_url_base()
+    return {
+        "get_index": f"{api_base}/recall/v1/indexes/{{index_id}}/get",
+        "delete_index": f"{api_base}/recall/v1/indexes/{{index_id}}/delete",
+        "create_index": f"{api_base}/recall/v1/indexes",
+        "upsert_nodes": f"{api_base}/recall/v1/indexes/{{index_id}}/upsert",
+        "create_fileset": f"{api_base}/files/v1/filesets/",
+        "upload_file": f"{api_base}/files/v1/filesets/{{fileset_id}}/files",
+        "get_file": f"{api_base}/files/v1/filesets/{{fileset_id}}/path",
+        "get_file_by_id": f"{api_base}/files/v1/filesets/{{fileset_id}}/files/{{file_id}}",
+        "get_file_by_id_download": f"{api_base}/files/v1/filesets/{{fileset_id}}/files/{{file_id}}/download",
+    }
+
+# Backward compatibility - this will be deprecated
+ENDPOINTS = {}
 
 # Type-safe endpoint mapping
 ENDPOINT_MAPPING: Dict[Tuple[IndexType, VectorOperation], str] = {
     (IndexType.ENVIRONMENT, VectorOperation.CREATE_INDEX): "create_index",
-    (IndexType.GLOBAL, VectorOperation.CREATE_INDEX): "create_index_global",
     (IndexType.ENVIRONMENT, VectorOperation.UPSERT_NODES): "upsert_nodes",
-    (IndexType.GLOBAL, VectorOperation.UPSERT_NODES): "upsert_nodes_global",
     (IndexType.ENVIRONMENT, VectorOperation.GET_INDEX): "get_index",
     (IndexType.ENVIRONMENT, VectorOperation.DELETE_INDEX): "delete_index",
 }
 
 
-def get_endpoint_key(operation: VectorOperation, is_global: bool = False) -> str:
+def get_endpoint_key(operation: VectorOperation) -> str:
     """
     Get the appropriate endpoint key for a vector operation.
 
     Args:
         operation: The vector operation to perform
-        is_global: Whether to use global or environment-specific endpoints
 
     Returns:
         The endpoint key for use with ENDPOINTS dict
@@ -250,7 +249,7 @@ def get_endpoint_key(operation: VectorOperation, is_global: bool = False) -> str
     Raises:
         KeyError: If the operation/index type combination is not supported
     """
-    index_type = IndexType.GLOBAL if is_global else IndexType.ENVIRONMENT
+    index_type = IndexType.ENVIRONMENT
     endpoint_key = ENDPOINT_MAPPING.get((index_type, operation))
 
     if endpoint_key is None:

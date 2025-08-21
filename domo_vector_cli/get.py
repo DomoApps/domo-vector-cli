@@ -1,5 +1,5 @@
-import os
-from domo_vector_cli.constants import ENDPOINTS
+from domo_vector_cli.constants import get_endpoints
+from domo_vector_cli.config import config
 
 
 async def handle_get_cli(args):
@@ -17,8 +17,9 @@ async def get_all_node_ids(index_id: str) -> list:
     """
     import httpx
 
-    url = ENDPOINTS["get_index"].replace("{index_id}", index_id)
-    headers = {"x-domo-developer-token": os.environ.get("DOMO_DEVELOPER_TOKEN", "")}
+    endpoints = get_endpoints()
+    url = endpoints["get_index"].replace("{index_id}", index_id)
+    headers = config.get_headers()
     async with httpx.AsyncClient() as client:
         response = await client.post(url, json={}, headers=headers)
         response.raise_for_status()
