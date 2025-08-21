@@ -3,6 +3,7 @@ manifest_examples/
 pdfs/
 txt/
 json/
+/images
 *.log
 jupyter/
 # Byte-compiled / optimized / DLL files
