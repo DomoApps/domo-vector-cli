@@ -1,6 +1,5 @@
 import os
 import logging
-import base64
 from typing import Dict, Generator, List, Optional, Any, Tuple
 from domo_vector_cli.config import config
 from domo_vector_cli.constants import (
@@ -176,33 +175,6 @@ def process_text_file(
         return []
 
 
-def process_image_file(file_path: str) -> Optional[Dict[str, Any]]:
-    """Process image file and return image data for embedding."""
-    try:
-        # Validate image file
-        validation_result = is_valid_image_file(file_path)
-        if not validation_result["valid"]:
-            logger.error(
-                f"Invalid image file {file_path}: {validation_result['error']}"
-            )
-            return None
-
-        # Convert to base64
-        base64_data = image_to_base64(file_path)
-        if not base64_data:
-            logger.error(f"Failed to convert image to base64: {file_path}")
-            return None
-
-        return {
-            "base64_data": base64_data,
-            "file_path": file_path,
-            "media_type": validation_result["format"],
-        }
-    except Exception as e:
-        logger.error(f"Error processing image file {file_path}: {e}")
-        return None
-
-
 def is_valid_image_file(file_path: str) -> Dict[str, Any]:
     """Validate if a file is a valid image using Pillow."""
     try:
@@ -225,6 +197,7 @@ def is_valid_image_file(file_path: str) -> Dict[str, Any]:
 
 def image_to_base64(file_path: str) -> Optional[str]:
     """Convert image file to base64 string."""
+    import base64
     try:
         with open(file_path, "rb") as image_file:
             base64_bytes = base64.b64encode(image_file.read())
@@ -234,8 +207,9 @@ def image_to_base64(file_path: str) -> Optional[str]:
         return None
 
 
-async def embed_image(base64_data: str, media_type: str) -> Optional[List[float]]:
-    """Get embedding for an image using Domo's AI API."""
+
+async def embed_image(base64_data: str) -> Optional[List[float]]:
+    """Get embedding for an image using base64 encoded data."""
     import httpx
 
     try:
@@ -251,7 +225,7 @@ async def embed_image(base64_data: str, media_type: str) -> Optional[List[float]
             "input": [
                 {
                     "type": "base64",
-                    "mediaType": f"image/{media_type}",
+                    "mediaType": "image/png",
                     "data": base64_data,
                 }
             ],
@@ -272,14 +246,22 @@ async def embed_image(base64_data: str, media_type: str) -> Optional[List[float]
 
 async def process_image_for_upsert(file_path: str) -> Optional[Dict[str, Any]]:
     """Process an image file and create an embedding for vector upsert."""
-    # Process the image file
-    image_data = process_image_file(file_path)
-    if not image_data:
+    # Validate image file
+    validation_result = is_valid_image_file(file_path)
+    if not validation_result["valid"]:
+        logger.error(f"Invalid image file {file_path}: {validation_result['error']}")
         return None
 
-    # Get the embedding
-    embedding = await embed_image(image_data["base64_data"], image_data["media_type"])
+    # Convert to base64
+    base64_data = image_to_base64(file_path)
+    if not base64_data:
+        logger.error(f"Failed to convert image to base64: {file_path}")
+        return None
+
+    # Get the embedding using base64 data
+    embedding = await embed_image(base64_data)
     if not embedding:
+        logger.error(f"Failed to get embedding for image: {file_path}")
         return None
 
     filename = os.path.basename(file_path)
@@ -288,7 +270,9 @@ async def process_image_for_upsert(file_path: str) -> Optional[Dict[str, Any]]:
         "file_path": file_path,
         "type": "IMAGE",
         "embedding": embedding,
-        "properties": {"media_type": image_data["media_type"]},
+        "properties": {
+            "media_type": validation_result["format"]
+        },
     }
 
 
