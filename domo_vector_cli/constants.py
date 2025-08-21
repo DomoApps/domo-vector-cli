@@ -20,11 +20,14 @@ DEFAULT_CHUNK_SIZE = 1500
 DEFAULT_CHUNK_OVERLAP = 200
 DEFAULT_INDEX_ID = os.environ.get("VECTOR_INDEX_ID")
 
+
 # Dynamic API URL base - will be loaded from config when accessed
 def get_api_url_base() -> str:
     """Get API URL base from configuration."""
     from domo_vector_cli.config import config
+
     return config.domo.api_url_base
+
 
 COMMANDS = {
     "configure": {
@@ -167,6 +170,11 @@ COMMANDS = {
                         "default": None,
                         "help": "Group ID for the nodes being uploaded.",
                     },
+                    {
+                        "name": "--include-images",
+                        "action": "store_true",
+                        "help": "If set, also process and embed image files (png, jpg, jpeg, gif, bmp, webp, tiff).",
+                    },
                 ],
             },
             "delete-all": {
@@ -209,6 +217,7 @@ COMMANDS = {
     },
 }
 
+
 def get_endpoints() -> Dict[str, str]:
     """Get API endpoints with dynamic base URL."""
     api_base = get_api_url_base()
@@ -217,12 +226,14 @@ def get_endpoints() -> Dict[str, str]:
         "delete_index": f"{api_base}/recall/v1/indexes/{{index_id}}/delete",
         "create_index": f"{api_base}/recall/v1/indexes",
         "upsert_nodes": f"{api_base}/recall/v1/indexes/{{index_id}}/upsert",
+        "image_embedding": f"{api_base}/ai/v1/embedding/image",
         "create_fileset": f"{api_base}/files/v1/filesets/",
         "upload_file": f"{api_base}/files/v1/filesets/{{fileset_id}}/files",
         "get_file": f"{api_base}/files/v1/filesets/{{fileset_id}}/path",
         "get_file_by_id": f"{api_base}/files/v1/filesets/{{fileset_id}}/files/{{file_id}}",
         "get_file_by_id_download": f"{api_base}/files/v1/filesets/{{fileset_id}}/files/{{file_id}}/download",
     }
+
 
 # Backward compatibility - this will be deprecated
 ENDPOINTS = {}
