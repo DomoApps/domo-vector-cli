@@ -48,8 +48,8 @@ def handle_help_cli(*args, **kwargs):
     print("  fileset get-fileset --fileset-id <id>")
     print("                         Get fileset metadata and information")
     print("  fileset get-filesets   List all available filesets")
-    print("  fileset search-filesets [--limit N] [--offset N]")
-    print("                         Search filesets with pagination (default: limit=10, offset=0)\n")
+    print("  fileset search-filesets [--limit N] [--offset N] [--name <search_term>]")
+    print("                         Search filesets with pagination and name filtering\n")
     
     print("EXAMPLES:")
     print("  domo-vector configure")

@@ -24,7 +24,7 @@ A Python CLI tool for chunking, uploading, and managing documentation files (Mar
 - Upload files or entire directories to FileSets
 - Download files from FileSets
 - Get FileSet metadata and list files
-- Search FileSets by name or metadata
+- Search FileSets by name or metadata with pagination support
 - Fetch file text content directly (without saving to disk)
 
 ---
@@ -110,7 +110,7 @@ domo-vector help
 - `domo-vector fileset get-file --fileset-id <id> --file-path <path>` - Download file
 - `domo-vector fileset get-fileset --fileset-id <id>` - Get Fileset metadata
 - `domo-vector fileset get-filesets` - List all Filesets
-- `domo-vector fileset search-filesets` - Search Filesets with pagination
+- `domo-vector fileset search-filesets` - Search Filesets with name filtering and pagination
 
 ---
 
@@ -217,12 +217,16 @@ domo-vector fileset get-filesets
 
 #### Search Filesets
 
+Search filesets with optional name filtering and pagination:
+
 ```bash
-domo-vector fileset search-filesets --limit 10 --offset 0
+domo-vector fileset search-filesets --limit 10 --offset 0 --name "docs"
 ```
 
+**Options:**
 - `--limit`: Maximum number of filesets to return (default: 10)
 - `--offset`: Offset for pagination (default: 0)
+- `--name`: Search filesets by name (partial matching supported)
 
 ---
 

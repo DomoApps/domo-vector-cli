@@ -118,6 +118,12 @@ COMMANDS = {
                         "default": 0,
                         "help": "Offset for pagination",
                     },
+                    {
+                        "name": "--name",
+                        "type": str,
+                        "required": False,
+                        "help": "Search filesets by name (partial matching supported)",
+                    },
                 ],
             },
         },

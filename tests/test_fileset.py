@@ -365,6 +365,7 @@ class TestCLIHandlers:
         mock_args.fileset_command = "search-filesets"
         mock_args.limit = 5
         mock_args.offset = 10
+        mock_args.name = None  # Explicitly set name to None
 
         with mock.patch('domo_vector_cli.fileset.search_filesets') as mock_search:
             mock_search.return_value = {
@@ -376,7 +377,31 @@ class TestCLIHandlers:
             await fileset.handle_fileset_cli(mock_args)
 
         # Assert
-        mock_search.assert_called_once_with(limit=5, offset=10)
+        mock_search.assert_called_once_with(limit=5, offset=10, filters=None)
+        captured = capsys.readouterr()
+        assert "Found 1 filesets" in captured.out
+
+    @pytest.mark.asyncio
+    async def test_handle_fileset_cli_search_filesets_with_name(self, capsys):
+        # Arrange
+        mock_args = MagicMock()
+        mock_args.fileset_command = "search-filesets"
+        mock_args.limit = 5
+        mock_args.offset = 10
+        mock_args.name = "test"
+
+        with mock.patch('domo_vector_cli.fileset.search_filesets') as mock_search:
+            mock_search.return_value = {
+                "success": True,
+                "filesets": [{"id": "fs1", "name": "Test Fileset"}]
+            }
+
+            # Act
+            await fileset.handle_fileset_cli(mock_args)
+
+        # Assert
+        expected_filters = [{"field": "name", "value": ["test"], "not": False, "operator": "LIKE"}]
+        mock_search.assert_called_once_with(limit=5, offset=10, filters=expected_filters)
         captured = capsys.readouterr()
         assert "Found 1 filesets" in captured.out
 

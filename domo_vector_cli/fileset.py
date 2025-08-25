@@ -393,9 +393,10 @@ def search_filesets(
     logger.info(f"Searching filesets with body: {json.dumps(body)}")
     resp = requests.post(url, headers=headers, json=body)
     if resp.status_code == 200:
-        filesets = resp.json()
-        logger.info(f"Found {len(filesets.get('filesets', []))} filesets.")
-        return {"success": True, "filesets": filesets.get("filesets", filesets)}
+        response_data = resp.json()
+        filesets = response_data.get("fileSets", [])
+        logger.info(f"Found {len(filesets)} filesets.")
+        return {"success": True, "filesets": filesets}
     else:
         logger.error(f"Failed to search filesets: {resp.status_code} {resp.text}")
         return {"success": False, "status_code": resp.status_code, "error": resp.text}
@@ -469,7 +470,13 @@ async def handle_fileset_cli(args):
         # Handle search-filesets CLI command
         limit = getattr(args, "limit", 10)
         offset = getattr(args, "offset", 0)
-        result = search_filesets(limit=limit, offset=offset)
+        name_filter = getattr(args, "name", None)
+        
+        filters = None
+        if name_filter:
+            filters = [{"field": "name", "value": [name_filter], "not": False, "operator": "LIKE"}]
+        
+        result = search_filesets(limit=limit, offset=offset, filters=filters)
         if result["success"]:
             print(f"Found {len(result['filesets'])} filesets:")
             for fs in result["filesets"]:
