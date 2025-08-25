@@ -178,7 +178,7 @@ COMMANDS = {
                 ],
             },
             "delete-all": {
-                "help": "Delete all nodes in the index",
+                "help": "Delete ALL nodes in the index",
                 "args": [
                     {"name": "--index-id", "required": True, "help": "Index ID"},
                 ],

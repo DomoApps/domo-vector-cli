@@ -18,7 +18,8 @@ dependencies = [
     "langchain-text-splitters",
     "pymupdf",
     "beautifulsoup4",
-    "python-dotenv"
+    "python-dotenv",
+    "pillow"
 ]
 
 [project.optional-dependencies]

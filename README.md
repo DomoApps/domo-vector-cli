@@ -14,7 +14,7 @@ A Python CLI tool for chunking, uploading, and managing documentation files (Mar
 - Delete nodes from a vector index:
   - By node ID (`vector delete-by-id`)
   - By group ID (`vector delete-by-group`)
-  - Delete all nodes without a group (`vector delete-all`)
+  - Delete all nodes from an index (`vector delete-all`)
 - Fetch all node IDs from an index (`vector get-all`)
 - Configure your Domo API key and instance URL interactively
 
@@ -157,7 +157,7 @@ domo-vector vector delete-by-id --index-id your-index-id --node-ids id1 id2 ...
 domo-vector vector delete-by-group --index-id your-index-id --group-ids group1 group2 ...
 ```
 
-#### Delete All Nodes (without group)
+#### Delete All Nodes
 
 ```bash
 domo-vector vector delete-all --index-id your-index-id

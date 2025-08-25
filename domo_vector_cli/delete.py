@@ -4,8 +4,8 @@ from domo_vector_cli.config import config
 
 async def handle_delete_cli(args):
     if args.vector_command == "delete-all":
-        print(f"Deleting all nodes without group ids from index {args.index_id}")
-        await delete_all_nodes_without_group_id(args.index_id)
+        print(f"Deleting ALL nodes from index {args.index_id}")
+        await delete_all_nodes(args.index_id)
         return
     if args.vector_command == "delete-by-id":
         print(f"Deleting nodes by nodeId: {args.node_ids} from index {args.index_id}")
@@ -17,9 +17,9 @@ async def handle_delete_cli(args):
         print(result)
 
 
-async def delete_all_nodes_without_group_id(index_id: str):
+async def delete_all_nodes(index_id: str):
     """
-    Deletes all nodes from the vector index by fetching all node IDs and calling the delete endpoint.
+    Deletes ALL nodes from the vector index by fetching all node IDs and calling the delete endpoint.
     """
     import httpx
 
@@ -31,15 +31,13 @@ async def delete_all_nodes_without_group_id(index_id: str):
         response = await client.post(url_get, json={}, headers=headers, timeout=60)
         response.raise_for_status()
         data = response.json()
-        # Only delete nodes that do NOT have a groupId property
-        node_ids = [
-            node["id"] for node in data.get("nodes", []) if not node.get("groupId")
-        ]
+        # Get ALL node IDs (not just ungrouped ones)
+        node_ids = [node["id"] for node in data.get("nodes", [])]
 
         if not node_ids:
-            print(f"No nodes found in index {index_id} without groupId.")
+            print(f"No nodes found in index {index_id}.")
             return
-        print(f"Deleting {len(node_ids)} nodes from index {index_id}...")
+        print(f"Deleting ALL {len(node_ids)} nodes from index {index_id}...")
         url_delete = endpoints["delete_index"].replace("{index_id}", index_id)
         payload = {"filter": {"nodeIds": node_ids}}
         del_response = await client.post(
@@ -59,9 +57,9 @@ async def delete_nodes_by_id(index_id: str, node_ids: list):
     endpoints = get_endpoints()
     url = endpoints["delete_index"].replace("{index_id}", index_id)
     headers = config.get_headers()
-    payload = {"nodeIds": node_ids}
+    payload = {"filter": {"nodeIds": node_ids}}
     async with httpx.AsyncClient() as client:
-        response = await client.post(url, json=payload, headers=headers)
+        response = await client.post(url, json=payload, headers=headers, timeout=60)
         response.raise_for_status()
         return response.json()
 
@@ -75,8 +73,8 @@ async def delete_nodes_by_group_id(index_id: str, group_ids: list):
     endpoints = get_endpoints()
     url = endpoints["delete_index"].replace("{index_id}", index_id)
     headers = config.get_headers()
-    payload = {"nodeGroupIds": group_ids}
+    payload = {"filter": {"nodeGroupIds": group_ids}}
     async with httpx.AsyncClient() as client:
-        response = await client.post(url, json=payload, headers=headers)
+        response = await client.post(url, json=payload, headers=headers, timeout=60)
         response.raise_for_status()
         return response.json()
