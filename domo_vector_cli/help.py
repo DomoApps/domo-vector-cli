@@ -16,7 +16,7 @@ def handle_help_cli(*args, **kwargs):
     print("    Required arguments:")
     print("      --source-dir PATH    Source directory containing files to process")
     print("    Optional arguments:")
-    print("      --index-id ID        Vector index ID (uses VECTOR_INDEX_ID from .env if not specified)")
+    print("      --index-id ID        Vector index ID (default: uses VECTOR_INDEX_ID from .env)")
     print("      --include-images     Process image files (.png, .jpg, .jpeg, .gif, .bmp, .webp, .tiff)")
     print("      --dry-run           Preview what would be uploaded without uploading")
     print("      --no-create-index   Skip index creation, upload to existing index only")

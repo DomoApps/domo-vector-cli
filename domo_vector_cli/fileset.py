@@ -4,7 +4,7 @@ Handler functions for fileset-related CLI commands: create, upload-file, get-fil
 
 import os
 import requests
-from domo_vector_cli.constants import ENDPOINTS
+from domo_vector_cli.constants import get_endpoints
 
 
 def create_fileset(
@@ -15,7 +15,8 @@ def create_fileset(
     batch_type="INCREMENTAL",
     connector="DOMO",
 ):
-    url = ENDPOINTS["create_fileset"]
+    endpoints = get_endpoints()
+    url = endpoints["create_fileset"]
     token = os.environ.get("DOMO_DEVELOPER_TOKEN")
     if not token:
         raise RuntimeError("DOMO_DEVELOPER_TOKEN environment variable not set.")
@@ -55,7 +56,8 @@ def upload_file_to_fileset(fileset_id, file_path, directory_path):
     if not token:
         logger.error("DOMO_DEVELOPER_TOKEN environment variable not set.")
         raise RuntimeError("DOMO_DEVELOPER_TOKEN environment variable not set.")
-    url = ENDPOINTS["upload_file"].format(fileset_id=fileset_id)
+    endpoints = get_endpoints()
+    url = endpoints["upload_file"].format(fileset_id=fileset_id)
     headers = {
         "x-domo-developer-token": token,
     }
@@ -152,7 +154,8 @@ def get_file_from_fileset(fileset_id, file_path=None, file_id=None, output_path=
     headers = {"x-domo-developer-token": token}
 
     def download_by_id(fileset_id, file_id, out_name):
-        url = ENDPOINTS["get_file_by_id_download"].format(
+        endpoints = get_endpoints()
+        url = endpoints["get_file_by_id_download"].format(
             fileset_id=fileset_id, file_id=file_id
         )
         resp = requests.get(url, headers=headers, stream=True)
@@ -173,7 +176,8 @@ def get_file_from_fileset(fileset_id, file_path=None, file_id=None, output_path=
 
     if file_path:
         # Query file object by path
-        url = ENDPOINTS["get_file"].format(fileset_id=fileset_id)
+        endpoints = get_endpoints()
+        url = endpoints["get_file"].format(fileset_id=fileset_id)
         params = {"path": file_path}
         logger.info(
             f"Querying file object by path: {file_path} from fileset: {fileset_id}"
@@ -228,7 +232,8 @@ def get_file_text_from_fileset(fileset_id, file_path=None, file_id=None):
     headers = {"x-domo-developer-token": token}
 
     def fetch_text_by_id(fileset_id, file_id):
-        url = ENDPOINTS["get_file_by_id_download"].format(
+        endpoints = get_endpoints()
+        url = endpoints["get_file_by_id_download"].format(
             fileset_id=fileset_id, file_id=file_id
         )
         resp = requests.get(url, headers=headers, stream=True)
@@ -252,7 +257,8 @@ def get_file_text_from_fileset(fileset_id, file_path=None, file_id=None):
 
     if file_path:
         # Query file object by path
-        url = ENDPOINTS["get_file"].format(fileset_id=fileset_id)
+        endpoints = get_endpoints()
+        url = endpoints["get_file"].format(fileset_id=fileset_id)
         params = {"path": file_path}
         logger.info(
             f"Querying file object by path: {file_path} from fileset: {fileset_id}"
@@ -284,6 +290,74 @@ def get_file_text_from_fileset(fileset_id, file_path=None, file_id=None):
         return {"success": False, "error": "No file_path or file_id provided."}
 
 
+def get_all_filesets():
+    """
+    Get all filesets using GET /api/files/v1/filesets.
+    Returns the list of all filesets.
+    """
+    import logging
+
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger(__name__)
+
+    token = os.environ.get("DOMO_DEVELOPER_TOKEN")
+    if not token:
+        logger.error("DOMO_DEVELOPER_TOKEN environment variable not set.")
+        raise RuntimeError("DOMO_DEVELOPER_TOKEN environment variable not set.")
+    headers = {"x-domo-developer-token": token}
+    
+    endpoints = get_endpoints()
+    url = endpoints["search_filesets"]
+    
+    logger.info("Fetching all filesets...")
+    # Use POST with proper payload structure
+    headers["Content-Type"] = "application/json"
+    payload = {
+        "fieldSort": [{"field": "updated", "order": "DESC"}],
+        "filters": [{"field": "name", "value": [""], "not": False, "operator": "LIKE"}],
+        "dateFilters": []
+    }
+    resp = requests.post(url, headers=headers, json=payload)
+    if resp.status_code == 200:
+        response_data = resp.json()
+        filesets = response_data.get("fileSets", [])
+        logger.info(f"Found {len(filesets)} filesets.")
+        return {"success": True, "filesets": filesets}
+    else:
+        logger.error(f"Failed to get filesets: {resp.status_code} {resp.text}")
+        return {"success": False, "status_code": resp.status_code, "error": resp.text}
+
+
+def get_fileset_metadata(fileset_id):
+    """
+    Get metadata for a specific fileset using GET /api/files/v1/filesets/{fileset_id}.
+    Returns the fileset metadata.
+    """
+    import logging
+
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger(__name__)
+
+    token = os.environ.get("DOMO_DEVELOPER_TOKEN")
+    if not token:
+        logger.error("DOMO_DEVELOPER_TOKEN environment variable not set.")
+        raise RuntimeError("DOMO_DEVELOPER_TOKEN environment variable not set.")
+    headers = {"x-domo-developer-token": token}
+    
+    endpoints = get_endpoints()
+    url = endpoints["get_fileset"].format(fileset_id=fileset_id)
+    
+    logger.info(f"Fetching metadata for fileset {fileset_id}...")
+    resp = requests.get(url, headers=headers)
+    if resp.status_code == 200:
+        fileset = resp.json()
+        logger.info(f"Found fileset: {fileset.get('name', fileset.get('id'))}")
+        return {"success": True, "fileset": fileset}
+    else:
+        logger.error(f"Failed to get fileset metadata: {resp.status_code} {resp.text}")
+        return {"success": False, "status_code": resp.status_code, "error": resp.text}
+
+
 def search_filesets(
     limit=10, offset=0, field_sort=None, filters=None, date_filters=None
 ):
@@ -305,7 +379,8 @@ def search_filesets(
         "x-domo-developer-token": token,
         "Content-Type": "application/json",
     }
-    url = f"{ENDPOINTS['create_fileset']}search?limit={limit}&offset={offset}"
+    endpoints = get_endpoints()
+    url = f"{endpoints['search_filesets']}?limit={limit}&offset={offset}"
     body = {
         "fieldSort": (
             field_sort
@@ -326,7 +401,7 @@ def search_filesets(
         return {"success": False, "status_code": resp.status_code, "error": resp.text}
 
 
-def handle_fileset_cli(args):
+async def handle_fileset_cli(args):
     if args.fileset_command == "create":
         result = create_fileset(name=args.name, description=args.description)
         print("Fileset created:", result)
@@ -369,10 +444,19 @@ def handle_fileset_cli(args):
             get_file_text_from_fileset(args.fileset_id, None, args.file_id)
     elif args.fileset_command == "get-fileset":
         print(f"Getting fileset {args.fileset_id}...")
-        # Implement get fileset logic here
+        result = get_fileset_metadata(args.fileset_id)
+        if result["success"]:
+            fileset = result["fileset"]
+            print(f"Fileset: {fileset.get('name', 'Unknown')} (ID: {fileset.get('id')})")
+            print(f"Description: {fileset.get('description', 'No description')}")
+            print(f"Created: {fileset.get('createdAt', 'Unknown')}")
+            print(f"Updated: {fileset.get('updatedAt', 'Unknown')}")
+            print(f"File count: {fileset.get('fileCount', 0)}")
+        else:
+            print(f"Error getting fileset: {result.get('error')}")
     elif args.fileset_command == "get-filesets":
         print("Listing all filesets...")
-        result = search_filesets()
+        result = get_all_filesets()
         if result["success"]:
             print(f"Found {len(result['filesets'])} filesets:")
             for fs in result["filesets"]:

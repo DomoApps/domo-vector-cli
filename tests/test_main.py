@@ -7,13 +7,13 @@ from domo_vector_cli import constants, main
 
 
 def test_parse_args_upload_nodes_defaults(monkeypatch):
-    """Test parsing upload command with default values."""
-    test_args = ["main.py", "vector", "upload"]
+    """Test parsing upload command with required --source-dir."""
+    test_args = ["main.py", "vector", "upload", "--source-dir", "./test-docs"]
     monkeypatch.setattr(sys, "argv", test_args)
     args = main.parse_args()
     assert args.command == "vector"
     assert args.vector_command == "upload"
-    assert args.root == "./documentation"
+    assert args.source_dir == "./test-docs"
     # index_id default comes from environment variable, so it could be None
     assert hasattr(args, "index_id")  # Just check the attribute exists
     assert args.dry_run is False
@@ -23,11 +23,12 @@ def test_parse_args_upload_nodes_defaults(monkeypatch):
 
 def test_parse_args_upload_nodes_with_index_id(monkeypatch):
     """Test parsing upload command with explicit index ID."""
-    test_args = ["main.py", "vector", "upload", "--index-id", "my-test-index"]
+    test_args = ["main.py", "vector", "upload", "--source-dir", "./docs", "--index-id", "my-test-index"]
     monkeypatch.setattr(sys, "argv", test_args)
     args = main.parse_args()
     assert args.command == "vector"
     assert args.vector_command == "upload"
+    assert args.source_dir == "./docs"
     assert args.index_id == "my-test-index"
 
 

@@ -1,6 +1,6 @@
 # Domo Vector CLI Tool
 
-A Python CLI tool for chunking, uploading, and managing documentation files (Markdown, HTML, JSON, PDF) and images in a Domo vector index or fileset. Supports robust batching, error handling, retry logging, and configuration via `.env`.
+A Python CLI tool for chunking, uploading, and managing documentation files (Markdown, HTML, JSON, PDF) and images in a Domo vector index or Fileset. Supports robust batching, error handling, retry logging, and configuration via `.env`.
 
 ---
 
@@ -104,13 +104,13 @@ domo-vector help
 
 ### Fileset Operations
 
-- `domo-vector fileset create --name <name>` - Create new fileset
+- `domo-vector fileset create --name <name>` - Create new Fileset
 - `domo-vector fileset upload-file --fileset-id <id> --file-path <path>` - Upload file
 - `domo-vector fileset upload-file --fileset-id <id> --directory <dir>` - Upload directory
 - `domo-vector fileset get-file --fileset-id <id> --file-path <path>` - Download file
-- `domo-vector fileset get-fileset --fileset-id <id>` - Get fileset metadata
-- `domo-vector fileset get-filesets` - List all filesets
-- `domo-vector fileset search-filesets` - Search filesets with pagination
+- `domo-vector fileset get-fileset --fileset-id <id>` - Get Fileset metadata
+- `domo-vector fileset get-filesets` - List all Filesets
+- `domo-vector fileset search-filesets` - Search Filesets with pagination
 
 ---
 
@@ -176,7 +176,7 @@ domo-vector vector get-all --index-id your-index-id
 #### Create a Fileset
 
 ```bash
-domo-vector fileset create --name "My Fileset" --description "Docs fileset"
+domo-vector fileset create --name "My Fileset" --description "Docs Fileset"
 ```
 
 #### Upload a File to a Fileset

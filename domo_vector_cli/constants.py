@@ -18,7 +18,6 @@ class VectorOperation(Enum):
 # These are imported from config now, but kept here for backward compatibility
 DEFAULT_CHUNK_SIZE = 1500
 DEFAULT_CHUNK_OVERLAP = 200
-DEFAULT_INDEX_ID = os.environ.get("VECTOR_INDEX_ID")
 
 
 # Dynamic API URL base - will be loaded from config when accessed
@@ -43,23 +42,23 @@ COMMANDS = {
         "help": "Manage filesets (create, upload-file, get-file, get-fileset, get-filesets)",
         "subcommands": {
             "create": {
-                "help": "Create a new fileset",
+                "help": "Create a new Fileset",
                 "args": [
                     {"name": "--name", "required": True, "help": "Name of the fileset"},
                     {
                         "name": "--description",
                         "required": False,
-                        "help": "Description of the fileset",
+                        "help": "Description of the Fileset",
                     },
                 ],
             },
             "upload-file": {
-                "help": "Upload a file or directory to a fileset",
+                "help": "Upload a file or directory to a Fileset",
                 "args": [
                     {
                         "name": "--fileset-id",
                         "required": True,
-                        "help": "ID of the fileset",
+                        "help": "ID of the Fileset",
                     },
                     {
                         "name": "--file-path",
@@ -74,12 +73,12 @@ COMMANDS = {
                 ],
             },
             "get-file": {
-                "help": "Get a file from a fileset",
+                "help": "Get a file from a Fileset",
                 "args": [
                     {
                         "name": "--fileset-id",
                         "required": True,
-                        "help": "ID of the fileset",
+                        "help": "ID of the Fileset",
                     },
                     {
                         "name": "--file-path",
@@ -94,18 +93,18 @@ COMMANDS = {
                 ],
             },
             "get-fileset": {
-                "help": "Get a fileset by ID",
+                "help": "Get a Fileset by ID",
                 "args": [
                     {
                         "name": "--fileset-id",
                         "required": True,
-                        "help": "ID of the fileset",
+                        "help": "ID of the Fileset",
                     }
                 ],
             },
-            "get-filesets": {"help": "List all filesets", "args": []},
+            "get-filesets": {"help": "List all Fileset", "args": []},
             "search-filesets": {
-                "help": "List/search filesets (with optional sort, filters, pagination)",
+                "help": "List/Search Fileset (with optional sort, filters, pagination)",
                 "args": [
                     {
                         "name": "--limit",
@@ -139,8 +138,8 @@ COMMANDS = {
                     {
                         "name": "--index-id",
                         "type": str,
-                        "default": DEFAULT_INDEX_ID,
-                        "help": "ID for the vector index to create/use.",
+                        "default": None,
+                        "help": "ID for the vector index to create/use (uses VECTOR_INDEX_ID from .env if not specified).",
                     },
                     {
                         "name": "--dry-run",
@@ -227,7 +226,10 @@ def get_endpoints() -> Dict[str, str]:
         "create_index": f"{api_base}/recall/v1/indexes",
         "upsert_nodes": f"{api_base}/recall/v1/indexes/{{index_id}}/upsert",
         "image_embedding": f"{api_base}/ai/v1/embedding/image",
-        "create_fileset": f"{api_base}/files/v1/filesets/",
+        "create_fileset": f"{api_base}/files/v1/filesets",
+        "get_filesets": f"{api_base}/files/v1/filesets",
+        "get_fileset": f"{api_base}/files/v1/filesets/{{fileset_id}}",
+        "search_filesets": f"{api_base}/files/v1/filesets/search",
         "upload_file": f"{api_base}/files/v1/filesets/{{fileset_id}}/files",
         "get_file": f"{api_base}/files/v1/filesets/{{fileset_id}}/path",
         "get_file_by_id": f"{api_base}/files/v1/filesets/{{fileset_id}}/files/{{file_id}}",
