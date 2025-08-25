@@ -131,10 +131,10 @@ COMMANDS = {
                 "help": "Chunk and upload files as nodes",
                 "args": [
                     {
-                        "name": "--root",
+                        "name": "--source-dir",
                         "type": str,
-                        "default": "./documentation",
-                        "help": "Root directory containing markdown documentation.",
+                        "required": True,
+                        "help": "Source directory containing files to process.",
                     },
                     {
                         "name": "--index-id",

@@ -27,14 +27,14 @@ async def handle_upload_cli(args: Any) -> None:
     """
     include_images = getattr(args, "include_images", False)
     content_types = "files and images" if include_images else "files"
-    print(f"Processing {content_types} in {args.root} with index ID {args.index_id}")
+    print(f"Processing {content_types} in {args.source_dir} with index ID {args.index_id}")
 
     chunk_size = args.chunk_size if args.chunk_size else DEFAULT_CHUNK_SIZE
     overlap = args.overlap if args.overlap else DEFAULT_CHUNK_OVERLAP
 
     # Process documents and create chunks
     text_chunks, image_chunks = await process_documents(
-        root_dir=args.root,
+        root_dir=args.source_dir,
         index_id=args.index_id,
         max_length=chunk_size,
         overlap=overlap,

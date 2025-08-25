@@ -82,19 +82,24 @@ class ConfigManager:
             api_url_base=api_url_base
         )
     
-    def validate_required_config(self) -> bool:
+    def validate_required_config(self) -> tuple[bool, str]:
         """
         Validate that all required configuration is available.
         
         Returns:
-            True if all required config is present, False otherwise
+            Tuple of (is_valid, error_message)
         """
         try:
             _ = self.domo  # This will raise if config is invalid
-            return True
+            return True, ""
         except ValueError as e:
             logger.error(f"Configuration validation failed: {e}")
-            return False
+            # Check if .env file exists
+            env_file_path = os.path.join(os.getcwd(), ".env")
+            if not os.path.exists(env_file_path):
+                return False, "no_env_file"
+            else:
+                return False, "empty_config"
     
     def get_headers(self) -> dict:
         """Get HTTP headers for Domo API requests."""

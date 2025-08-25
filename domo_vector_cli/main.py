@@ -50,11 +50,22 @@ async def cli_main():
 
     # Check for required configuration
     from domo_vector_cli.config import config
-    if not config.validate_required_config():
-        print(
-            "\nERROR: You must configure your DOMO_DEVELOPER_TOKEN and DOMO_API_URL_BASE before running this command."
-        )
-        print("Run: domo-vector configure\n")
+    is_valid, error_type = config.validate_required_config()
+    if not is_valid:
+        if error_type == "no_env_file":
+            print("\nSETUP REQUIRED: No configuration file found.")
+            print("This appears to be your first time using domo-vector.")
+            print("\nTo get started, run:")
+            print("  domo-vector configure")
+            print("\nThis will prompt you for your Domo credentials and create a .env file.")
+        else:  # empty_config
+            print("\nCONFIGURATION ERROR: Missing required credentials in .env file.")
+            print("Your .env file exists but is missing required values:")
+            print("  - DOMO_DEVELOPER_TOKEN")
+            print("  - DOMO_API_URL_BASE")
+            print("\nTo fix this, run:")
+            print("  domo-vector configure")
+        print()
         return
     elif args.command == "fileset":
         from domo_vector_cli.fileset import handle_fileset_cli

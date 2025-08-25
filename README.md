@@ -1,6 +1,6 @@
 # Domo Vector CLI Tool
 
-A Python CLI tool for chunking, uploading, and managing documentation files (Markdown, HTML, JSON, PDF) in a Domo vector index or fileset. Supports robust batching, error handling, retry logging, and configuration via `.env`.
+A Python CLI tool for chunking, uploading, and managing documentation files (Markdown, HTML, JSON, PDF) and images in a Domo vector index or fileset. Supports robust batching, error handling, retry logging, and configuration via `.env`.
 
 ---
 
@@ -9,6 +9,7 @@ A Python CLI tool for chunking, uploading, and managing documentation files (Mar
 ### Vector Index Management
 
 - Chunk and upload Markdown, HTML, JSON, and PDF files to a Domo vector index
+- Process and embed image files (PNG, JPG, JPEG, GIF, BMP, WebP, TIFF) for vector search
 - Robust batch uploads with error handling and retry logging (failed uploads are logged for retry)
 - Delete nodes from a vector index:
   - By node ID (`vector delete-by-id`)
@@ -19,14 +20,30 @@ A Python CLI tool for chunking, uploading, and managing documentation files (Mar
 
 ### Fileset Management
 
-- Create new filesets
-- Upload files or entire directories to filesets
-- Download files from filesets
-- Get fileset metadata and list files
-- Search filesets by name or metadata
+- Create new FileSets
+- Upload files or entire directories to FileSets
+- Download files from FileSets
+- Get FileSet metadata and list files
+- Search FileSets by name or metadata
 - Fetch file text content directly (without saving to disk)
 
-- Comprehensive tests with async support
+---
+
+## Prerequisites
+
+### System Requirements
+
+- **Python 3.8 or higher** - Check with `python --version` or `python3 --version`
+- **pip** - Python package installer (usually comes with Python)
+- **Git** - For cloning the repository
+
+### Domo Requirements
+
+- **Domo Instance Access** - You need access to a Domo instance (e.g., `your-company.domo.com`)
+- **Developer Token** - A Domo Developer API token with appropriate permissions
+  - Log into your Domo instance
+  - Go to Admin > Authentication > Access Tokens
+  - Create a new Developer Token and make sure you save it somewhere safe for reference
 
 ---
 
@@ -35,8 +52,8 @@ A Python CLI tool for chunking, uploading, and managing documentation files (Mar
 1. **Clone the repository:**
 
    ```bash
-   git clone <your-repo-url>
-   cd chunk-markdown
+   git clone git@github.com:DomoApps/domo-vector-cli.git
+   cd domo-vector-cli
    ```
 
 2. **Install dependencies and the CLI tool locally:**
@@ -71,6 +88,32 @@ domo-vector help
 
 ---
 
+## Quick Command Reference
+
+### Configuration
+
+- `domo-vector configure` - Set up API credentials and instance URL
+
+### Vector Index Operations
+
+- `domo-vector vector upload` - Upload and chunk files to vector index
+- `domo-vector vector delete-all --index-id <id>` - Delete all nodes in index
+- `domo-vector vector delete-by-id --index-id <id> --node-ids <id1> <id2>` - Delete specific nodes
+- `domo-vector vector delete-by-group --index-id <id> --group-ids <group1>` - Delete nodes by group
+- `domo-vector vector get-all --index-id <id>` - Get all node IDs
+
+### Fileset Operations
+
+- `domo-vector fileset create --name <name>` - Create new fileset
+- `domo-vector fileset upload-file --fileset-id <id> --file-path <path>` - Upload file
+- `domo-vector fileset upload-file --fileset-id <id> --directory <dir>` - Upload directory
+- `domo-vector fileset get-file --fileset-id <id> --file-path <path>` - Download file
+- `domo-vector fileset get-fileset --fileset-id <id>` - Get fileset metadata
+- `domo-vector fileset get-filesets` - List all filesets
+- `domo-vector fileset search-filesets` - Search filesets with pagination
+
+---
+
 ### Vector Index Commands
 
 **Index Types:**
@@ -79,15 +122,28 @@ domo-vector help
 
 #### Upload Nodes (Chunk and Upload Files)
 
-**Environment-specific index:**
+Upload text documents:
 
 ```bash
-domo-vector vector upload --root ./documentation --index-id your-index-id
+domo-vector vector upload --source-dir ./documentation --index-id your-index-id
 ```
 
-- `--root`: Root directory containing documentation files (default: `./documentation`)
-- `--index-id`: ID for the vector index to create/use
-- Additional options: `--dry-run`, `--no-create-index`, `--chunk-size`, `--overlap`, `--group-id`
+Upload with image processing:
+
+```bash
+domo-vector vector upload --source-dir ./documentation --index-id your-index-id --include-images
+```
+
+**Options:**
+
+- `--source-dir`: Source directory containing files (required)
+- `--index-id`: ID for the vector index (optional if set in `.env` as `VECTOR_INDEX_ID`)
+- `--include-images`: Process and embed image files along with text documents
+- `--dry-run`: Preview what would be uploaded without actually uploading
+- `--no-create-index`: Skip index creation, just upload to existing index
+- `--chunk-size`: Maximum characters per text chunk (default: 1500)
+- `--overlap`: Overlapping characters between chunks (default: 200)
+- `--group-id`: Group ID for uploaded nodes (defaults to filename)
 
 #### Delete Nodes by ID
 
@@ -132,7 +188,7 @@ domo-vector fileset upload-file --fileset-id <fileset-id> --file-path ./path/to/
 #### Upload an Entire Directory to a Fileset
 
 ```bash
-domo-vector fileset upload-dir --fileset-id <fileset-id> --dir-path ./path/to/docs
+domo-vector fileset upload-file --fileset-id <fileset-id> --directory ./path/to/docs
 ```
 
 #### Download a File from a Fileset
@@ -141,38 +197,53 @@ domo-vector fileset upload-dir --fileset-id <fileset-id> --dir-path ./path/to/do
 domo-vector fileset get-file --fileset-id <fileset-id> --file-path <remote/path.md>
 ```
 
+Or by file ID:
+
+```bash
+domo-vector fileset get-file --fileset-id <fileset-id> --file-id <file-id>
+```
+
 #### Get Fileset Metadata
 
 ```bash
-domo-vector fileset get-metadata --fileset-id <fileset-id>
+domo-vector fileset get-fileset --fileset-id <fileset-id>
 ```
 
-#### List Files in a Fileset
+#### List All Filesets
 
 ```bash
-domo-vector fileset list-files --fileset-id <fileset-id>
+domo-vector fileset get-filesets
 ```
 
 #### Search Filesets
 
 ```bash
-domo-vector fileset search-filesets --name "search-term"
+domo-vector fileset search-filesets --limit 10 --offset 0
 ```
 
-#### Fetch File Text Content
-
-```bash
-domo-vector fileset fetch-file-content --fileset-id <fileset-id> --file-path <remote/path.md>
-```
+- `--limit`: Maximum number of filesets to return (default: 10)
+- `--offset`: Offset for pagination (default: 0)
 
 ---
 
 ## Supported File Types
 
+### Text Documents
+
 - Markdown (`.md`)
 - JSON (`.json`)
 - PDF (`.pdf`)
 - HTML (`.html`)
+- Plain text (`.txt`)
+
+### Images (with `--include-images`)
+
+- PNG (`.png`)
+- JPEG (`.jpg`, `.jpeg`)
+- GIF (`.gif`)
+- BMP (`.bmp`)
+- WebP (`.webp`)
+- TIFF (`.tiff`)
 
 ---
 
@@ -199,6 +270,7 @@ The CLI uses a `.env` file for configuration. Example:
 ```
 DOMO_DEVELOPER_TOKEN=your-api-key-here
 DOMO_API_URL_BASE=https://your-instance.domo.com/api
+VECTOR_INDEX_ID=your-default-index-id
 ```
 
 ---
